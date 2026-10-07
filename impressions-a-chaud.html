@@ -1,0 +1,437 @@
+<title>Impressions à chaud</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : la page Ex3a du vademecum devenue outil — un minuteur de 5 min en tête, puis 4 feuillets (tâches, structure, souvenirs, croquis) et l'export */
+:root{
+  --paper:#f5f6f8; --sheet:#ffffff; --ink:#191c25; --muted:#5c6273; --rule:#dcdfe6;
+  --ballpoint:#2747c9; --ballpoint-soft:#e6eafb; --warn:#a4570b; --ok:#1f7a4d;
+  --c1:#2747c9; --c2:#d0632e; --c3:#2c8a6a; --c4:#8a4fbf; --c5:#c7a21c; --c6:#7a8194;
+  --display:"Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --body:"Instrument Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#111319; --sheet:#1a1d26; --ink:#e8eaf1; --muted:#9aa1b3; --rule:#2d313d;
+  --ballpoint:#8fa5ff; --ballpoint-soft:#232a45; --warn:#f0a35a; --ok:#5fcf97;
+  --c1:#8fa5ff; --c2:#f08a57; --c3:#4fc79c; --c4:#bb8be8; --c5:#e2c046; --c6:#9aa1b3;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#111319; --sheet:#1a1d26; --ink:#e8eaf1; --muted:#9aa1b3; --rule:#2d313d;
+  --ballpoint:#8fa5ff; --ballpoint-soft:#232a45; --warn:#f0a35a; --ok:#5fcf97;
+  --c1:#8fa5ff; --c2:#f08a57; --c3:#4fc79c; --c4:#bb8be8; --c5:#e2c046; --c6:#9aa1b3;
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.55;padding:0 16px;padding-block:32px 64px}
+.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:26px}
+a{color:var(--ballpoint)}
+h1,h2{font-family:var(--display);font-weight:400;text-wrap:balance;margin:0;line-height:1.1}
+h1{font-size:clamp(2.4rem,6vw,3.6rem)}
+h1 em{color:var(--ballpoint)}
+h2{font-size:1.8rem}
+p{margin:0}
+code{font-family:var(--mono);font-size:.85em}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.hint{color:var(--muted);font-size:.92rem;max-width:68ch}
+.msg{font-size:.88rem;color:var(--muted)} .msg.ok{color:var(--ok)} .msg.warn{color:var(--warn)}
+
+header{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:24px;align-items:end;padding-bottom:22px;border-bottom:1px solid var(--rule)}
+header .intro{display:flex;flex-direction:column;gap:12px;min-width:0}
+header .lede{color:var(--muted);font-size:1.05rem;max-width:58ch}
+
+.timer{background:var(--sheet);border:1px solid var(--rule);border-radius:6px;padding:16px 20px;display:flex;flex-direction:column;gap:10px;align-items:center;min-width:230px}
+.clock{font-family:var(--mono);font-size:3rem;font-weight:500;font-variant-numeric:tabular-nums;line-height:1}
+.clock.done{color:var(--warn)}
+.track{width:100%;height:4px;background:var(--rule);border-radius:2px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--ballpoint)}
+.timer .msg{text-align:center;max-width:22ch}
+
+.sheet{background:var(--sheet);border:1px solid var(--rule);border-radius:4px;padding:24px;display:flex;flex-direction:column;gap:16px}
+.sheet-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.step{font-family:var(--mono);font-size:.78rem;color:var(--ballpoint)}
+
+button{font:inherit;font-size:.9rem;font-weight:500;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:7px 14px;border-radius:999px;cursor:pointer}
+button:hover{border-color:var(--ballpoint)}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:2px solid var(--ballpoint);outline-offset:2px}
+button.primary{background:var(--ballpoint);border-color:var(--ballpoint);color:var(--sheet)}
+button.ghost{border-color:transparent;color:var(--muted);padding:4px 8px}
+button[aria-pressed="true"]{background:var(--ballpoint-soft);border-color:var(--ballpoint);color:var(--ballpoint)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+input[type=text],textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:8px 10px;width:100%}
+textarea{resize:vertical;min-height:90px;line-height:1.55}
+input[type=range]{width:100%;accent-color:var(--ballpoint)}
+.flag{font-family:var(--mono);font-size:.72rem;background:var(--ballpoint-soft);color:var(--ballpoint);padding:2px 8px;border-radius:3px}
+
+/* Tâches */
+.split{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:28px;align-items:start}
+.tasks{display:flex;flex-direction:column;gap:12px}
+.task{display:grid;grid-template-columns:14px minmax(0,1fr) 120px 52px 28px;gap:10px;align-items:center}
+.task .dot{width:12px;height:12px;border-radius:50%}
+.task .pct{font-family:var(--mono);font-size:.9rem;text-align:right;font-variant-numeric:tabular-nums}
+.donut-box{display:flex;flex-direction:column;align-items:center;gap:12px}
+.donut{width:200px;max-width:100%;aspect-ratio:1;border-radius:50%;position:relative}
+.donut::after{content:"";position:absolute;inset:26%;background:var(--sheet);border-radius:50%}
+.donut-c{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1}
+.donut-c b{font-family:var(--display);font-weight:400;font-size:2.2rem;font-variant-numeric:tabular-nums;line-height:1}
+.donut-c small{font-size:.75rem;color:var(--muted)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+
+/* Structure */
+.stack{display:flex;height:38px;border-radius:4px;overflow:hidden;border:1px solid var(--rule)}
+.stack div{display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.78rem;color:#fff;min-width:0;overflow:hidden;white-space:nowrap}
+.kinds{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.kind{display:flex;flex-direction:column;gap:6px}
+.kind h3{margin:0;font-size:.95rem;font-weight:600;display:flex;gap:8px;align-items:center}
+.kind h3 i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.kind p{font-size:.85rem;color:var(--muted)}
+.kind .val{font-family:var(--mono);font-size:1.1rem;font-variant-numeric:tabular-nums}
+
+/* Souvenirs */
+.memories{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.memory{display:flex;flex-direction:column;gap:8px;border-top:2px solid var(--ink);padding-top:10px}
+.memory .n{font-family:var(--display);font-size:1.6rem;line-height:1}
+.memory label{font-size:.8rem;color:var(--muted)}
+.feel{display:flex;flex-wrap:wrap;gap:4px}
+.feel button{font-size:.78rem;padding:3px 9px;font-weight:400}
+
+/* Croquis */
+.sketch-wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.canvas-box{border:1px dashed var(--rule);border-radius:4px;background:var(--paper);aspect-ratio:1;max-width:100%;touch-action:none;position:relative}
+canvas{width:100%;height:100%;display:block;cursor:crosshair}
+.free textarea{min-height:100%;height:100%}
+.free{display:flex;flex-direction:column;gap:8px}
+.free textarea{flex:1;min-height:220px;border-style:dashed}
+
+pre{margin:0;font-family:var(--mono);font-size:.8rem;line-height:1.55;background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:16px;overflow:auto;max-height:360px;white-space:pre-wrap;word-break:break-word}
+footer{font-size:.82rem;color:var(--muted)}
+
+@media (max-width:760px){
+  header,.split,.sketch-wrap,.memories,.kinds{grid-template-columns:1fr}
+  .timer{min-width:0}
+  .task{grid-template-columns:14px minmax(0,1fr) 52px 28px}
+  .task input[type=range]{grid-column:2 / 5;grid-row:2}
+}
+@media (prefers-reduced-motion:no-preference){.track i{transition:width 1s linear}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="intro">
+      <span class="eyebrow">Artificial Inquiries · Bloc 01 Qualifying · Ex3a</span>
+      <h1>Impressions <em>à chaud</em></h1>
+      <p class="lede">Avant d'ouvrir ton historique, prends 5 minutes pour noter ce que tu crois savoir de ton usage de l'IA : ce que tu lui confies, comment tu lui parles, et les conversations qui t'ont marqué.</p>
+      <p class="hint"><strong>Règle de l'exercice :</strong> ne regarde pas encore ton historique de conversations. On cherche ton impression, pas les chiffres exacts.</p>
+    </div>
+    <div class="timer" aria-live="polite">
+      <span class="eyebrow">Minuteur</span>
+      <div class="clock" id="clock">5:00</div>
+      <div class="track"><i id="bar"></i></div>
+      <div class="row">
+        <button class="primary" id="tStart">Démarrer</button>
+        <button id="tReset">Remettre à 5:00</button>
+      </div>
+      <span class="msg" id="tMsg">Réfléchis sans chercher la précision.</span>
+    </div>
+  </header>
+
+  <!-- 1 -->
+  <section class="sheet" aria-labelledby="s1">
+    <div class="sheet-head">
+      <h2 id="s1">Ce que je confie à l'IA</h2>
+      <span class="step">Partie 1 · tâches et fréquence</span>
+    </div>
+    <p class="hint">Liste les tâches que tu délègues et donne à chacune un pourcentage approximatif. Par exemple : un tiers de traduction, le reste en réponses à des mails.</p>
+    <div class="row"><span class="flag" id="exFlag">Exemple : remplace par tes propres tâches</span></div>
+    <div class="split">
+      <div class="tasks">
+        <div id="taskList" class="tasks"></div>
+        <div class="row">
+          <button id="addTask">Ajouter une tâche</button>
+          <button id="norm">Ajuster le total à 100 %</button>
+          <button class="ghost" id="clearTasks">Tout effacer</button>
+        </div>
+        <span class="msg" id="sumMsg" role="status"></span>
+      </div>
+      <div class="donut-box">
+        <div class="donut" id="donut"><div class="donut-c"><b id="total">0 %</b><small>au total</small></div></div>
+      </div>
+    </div>
+    <div>
+      <p class="eyebrow" style="margin-bottom:8px">J'utilise l'IA…</p>
+      <div class="seg" id="freq">
+        <button data-v="plusieurs fois par jour">plusieurs fois par jour</button>
+        <button data-v="tous les jours">tous les jours</button>
+        <button data-v="chaque semaine">chaque semaine</button>
+        <button data-v="moins souvent">moins souvent</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2 -->
+  <section class="sheet" aria-labelledby="s2">
+    <div class="sheet-head">
+      <h2 id="s2">Comment je lui parle</h2>
+      <span class="step">Partie 1 · structure des conversations</span>
+    </div>
+    <p class="hint">Sur 10 conversations, combien sont de chaque type ? Les trois curseurs restent liés pour faire 100 %.</p>
+    <div class="stack" id="stack" aria-hidden="true"></div>
+    <div class="kinds" id="kinds"></div>
+  </section>
+
+  <!-- 3 -->
+  <section class="sheet" aria-labelledby="s3">
+    <div class="sheet-head">
+      <h2 id="s3">Les conversations qui m'ont marqué</h2>
+      <span class="step">Partie 2 · deux ou trois souvenirs</span>
+    </div>
+    <p class="hint">Repense à deux ou trois conversations qui t'ont laissé une impression durable. Décris-les en quelques mots et dis pourquoi elles t'ont marqué.</p>
+    <div class="memories" id="memories"></div>
+  </section>
+
+  <!-- 4 -->
+  <section class="sheet" aria-labelledby="s4">
+    <div class="sheet-head">
+      <h2 id="s4">Croquis et impressions</h2>
+      <span class="step">Pages 16 et 17 du vademecum</span>
+    </div>
+    <p class="hint">Le vademecum laisse un cadre pour dessiner ton impression d'ensemble et un autre pour l'écrire. Dessine avec la souris ou le doigt : un schéma, des flèches, des bulles, ce qui te vient.</p>
+    <div class="sketch-wrap">
+      <div class="free">
+        <span class="eyebrow">Dessine ton impression</span>
+        <div class="canvas-box"><canvas id="cv" aria-label="Zone de dessin"></canvas></div>
+        <div class="row"><button id="cvClear">Effacer le dessin</button></div>
+      </div>
+      <div class="free">
+        <span class="eyebrow">Écris ton impression</span>
+        <textarea id="impr" placeholder="Écris ici…"></textarea>
+      </div>
+    </div>
+  </section>
+
+  <!-- Export -->
+  <section class="sheet" aria-labelledby="s5">
+    <div class="sheet-head">
+      <h2 id="s5">Ma fiche Ex3a</h2>
+      <span class="step">Export Markdown</span>
+    </div>
+    <p class="hint">Tes réponses sont rassemblées dans une note Markdown. Copie-la pour la garder dans une note Zotero ou un fichier <code>.md</code>. Tu pourras la comparer à ton vrai historique à l'exercice suivant (Ex3b).</p>
+    <pre id="md"></pre>
+    <div class="row">
+      <button class="primary" id="copy">Copier la fiche</button>
+      <span class="msg" id="copyMsg" role="status"></span>
+    </div>
+  </section>
+
+  <footer>D'après Alcaras, G., Ricci, D., Prinetti, T. &amp; de Vries, Z. (2025). <i>Artificial Inquiries</i>. Éditions Annexes, médialab Sciences Po. <a href="https://hal.science/hal-05327878" target="_blank" rel="noopener">hal-05327878</a>. Tes réponses restent dans ce navigateur.</footer>
+</div>
+
+<script>
+(function(){
+const $=id=>document.getElementById(id);
+const COLORS=["--c1","--c2","--c3","--c4","--c5","--c6"];
+const KINDS=[
+  {k:"court",label:"Échanges courts",desc:"Une question, une réponse, et c'est fini.",c:"--c1"},
+  {k:"long",label:"Conversations longues",desc:"Plusieurs allers-retours pour arriver au résultat.",c:"--c2"},
+  {k:"etendu",label:"Dialogues étendus",desc:"Une conversation reprise sur plus d'une journée.",c:"--c3"}
+];
+const FEELS=["enthousiasme","frustration","amusement","inquiétude","surprise","doute éthique"];
+const EXAMPLE_TASKS=[{name:"Résumer des articles",p:35},{name:"Corriger et reformuler mes textes",p:25},{name:"Coder et débugger",p:20},{name:"Traduire",p:10},{name:"Trouver des idées",p:10}];
+
+function load(){try{return JSON.parse(localStorage.getItem("ex3a")||"null")}catch(e){return null}}
+function save(){try{localStorage.setItem("ex3a",JSON.stringify(S))}catch(e){}}
+
+let S=load()||{
+  example:true, tasks:EXAMPLE_TASKS.map(t=>({...t})), freq:"",
+  kinds:{court:60,long:30,etendu:10},
+  mem:[{t:"",d:"",f:[]},{t:"",d:"",f:[]},{t:"",d:"",f:[]}],
+  impr:"", sketch:null
+};
+const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---------- Minuteur ---------- */
+const TOTAL=300; let left=TOTAL, tick=null;
+function drawClock(){
+  $("clock").textContent=Math.floor(left/60)+":"+String(left%60).padStart(2,"0");
+  $("bar").style.width=((TOTAL-left)/TOTAL*100)+"%";
+  $("clock").classList.toggle("done",left===0);
+}
+$("tStart").onclick=()=>{
+  if(tick){clearInterval(tick);tick=null;$("tStart").textContent="Reprendre";$("tMsg").textContent="En pause.";return}
+  if(left===0) left=TOTAL;
+  $("tStart").textContent="Pause";$("tMsg").textContent="Réfléchis sans chercher la précision.";
+  tick=setInterval(()=>{left--;drawClock();if(left<=0){clearInterval(tick);tick=null;$("tStart").textContent="Recommencer";$("tMsg").textContent="Temps écoulé. Termine ta phrase et passe aux souvenirs.";}},1000);
+};
+$("tReset").onclick=()=>{clearInterval(tick);tick=null;left=TOTAL;drawClock();$("tStart").textContent="Démarrer";$("tMsg").textContent="Réfléchis sans chercher la précision."};
+drawClock();
+
+/* ---------- Tâches ---------- */
+function renderTasks(){
+  $("exFlag").hidden=!S.example;
+  $("taskList").innerHTML=S.tasks.map((t,i)=>`
+    <div class="task">
+      <span class="dot" style="background:var(${COLORS[i%COLORS.length]})"></span>
+      <input type="text" id="tn${i}" data-i="${i}" class="tname" value="${esc(t.name)}" placeholder="Nom de la tâche" aria-label="Tâche ${i+1}">
+      <input type="range" id="tp${i}" data-i="${i}" class="tpct" min="0" max="100" step="5" value="${t.p}" aria-label="Pourcentage tâche ${i+1}">
+      <span class="pct" id="tv${i}">${t.p} %</span>
+      <button class="ghost" data-del="${i}" aria-label="Supprimer la tâche ${i+1}">✕</button>
+    </div>`).join("");
+  drawDonut();
+}
+function drawDonut(){
+  const sum=S.tasks.reduce((a,t)=>a+ +t.p,0);
+  let acc=0;const parts=[];
+  const base=Math.max(sum,100);
+  S.tasks.forEach((t,i)=>{const a=acc/base*360,b=(acc+ +t.p)/base*360;acc+=+t.p;parts.push(`var(${COLORS[i%COLORS.length]}) ${a}deg ${b}deg`)});
+  parts.push(`var(--rule) ${acc/base*360}deg 360deg`);
+  $("donut").style.background=`conic-gradient(${parts.join(",")})`;
+  $("total").textContent=sum+" %";
+  const m=$("sumMsg");
+  if(sum===100){m.className="msg ok";m.textContent="Total : 100 %."}
+  else if(sum<100){m.className="msg warn";m.textContent=`Il manque ${100-sum} % : ajoute une tâche ou augmente un curseur.`}
+  else{m.className="msg warn";m.textContent=`Tu dépasses de ${sum-100} %. Clique sur « Ajuster le total à 100 % ».`}
+}
+function leaveExample(){if(S.example){S.example=false;$("exFlag").hidden=true}}
+$("taskList").addEventListener("input",e=>{
+  const i=+e.target.dataset.i;
+  if(e.target.classList.contains("tname")){S.tasks[i].name=e.target.value}
+  if(e.target.classList.contains("tpct")){S.tasks[i].p=+e.target.value;$("tv"+i).textContent=e.target.value+" %";drawDonut()}
+  leaveExample();save();renderMD();
+});
+$("taskList").addEventListener("click",e=>{
+  const d=e.target.closest("[data-del]");if(!d)return;
+  S.tasks.splice(+d.dataset.del,1);leaveExample();renderTasks();save();renderMD();
+});
+$("addTask").onclick=()=>{S.tasks.push({name:"",p:0});leaveExample();renderTasks();save();renderMD();const n=$("tn"+(S.tasks.length-1));n&&n.focus()};
+$("clearTasks").onclick=()=>{S.tasks=[{name:"",p:0}];leaveExample();renderTasks();save();renderMD();$("tn0").focus()};
+$("norm").onclick=()=>{
+  const sum=S.tasks.reduce((a,t)=>a+ +t.p,0);if(!sum)return;
+  S.tasks.forEach(t=>t.p=Math.round(t.p/sum*100/5)*5);
+  let diff=100-S.tasks.reduce((a,t)=>a+t.p,0);
+  if(diff&&S.tasks.length){const big=S.tasks.reduce((m,t,i,a)=>t.p>a[m].p?i:m,0);S.tasks[big].p=Math.max(0,S.tasks[big].p+diff)}
+  leaveExample();renderTasks();save();renderMD();
+};
+$("freq").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  S.freq=S.freq===b.dataset.v?"":b.dataset.v;renderFreq();save();renderMD();
+});
+function renderFreq(){[...$("freq").children].forEach(b=>b.setAttribute("aria-pressed",b.dataset.v===S.freq))}
+
+/* ---------- Structure ---------- */
+function renderKinds(){
+  $("kinds").innerHTML=KINDS.map(k=>`
+    <div class="kind">
+      <h3><i style="background:var(${k.c})"></i>${k.label}</h3>
+      <p>${k.desc}</p>
+      <span class="val" id="kv_${k.k}">${S.kinds[k.k]} %</span>
+      <input type="range" id="kr_${k.k}" data-k="${k.k}" min="0" max="100" step="5" value="${S.kinds[k.k]}" aria-label="${k.label}">
+    </div>`).join("");
+  drawStack();
+}
+function drawStack(){
+  $("stack").innerHTML=KINDS.map(k=>`<div style="width:${S.kinds[k.k]}%;background:var(${k.c})">${S.kinds[k.k]>=12?S.kinds[k.k]+" %":""}</div>`).join("");
+  KINDS.forEach(k=>{$("kv_"+k.k).textContent=S.kinds[k.k]+" %";$("kr_"+k.k).value=S.kinds[k.k]});
+}
+$("kinds").addEventListener("input",e=>{
+  const k=e.target.dataset.k;if(!k)return;
+  const v=+e.target.value;S.kinds[k]=v;
+  const others=KINDS.map(x=>x.k).filter(x=>x!==k);
+  let rest=100-v;const os=others.reduce((a,o)=>a+S.kinds[o],0);
+  if(os===0){S.kinds[others[0]]=rest;S.kinds[others[1]]=0}
+  else{const a=Math.round(S.kinds[others[0]]/os*rest/5)*5;S.kinds[others[0]]=a;S.kinds[others[1]]=rest-a}
+  drawStack();save();renderMD();
+});
+
+/* ---------- Souvenirs ---------- */
+function renderMem(){
+  $("memories").innerHTML=S.mem.map((m,i)=>`
+    <div class="memory">
+      <span class="n">${["Un","Deux","Trois"][i]}</span>
+      <label for="mt${i}">Titre ou sujet de la conversation</label>
+      <input type="text" id="mt${i}" data-i="${i}" data-f="t" value="${esc(m.t)}" placeholder="${i===2?"Facultatif":"Ex. : correction de mon mémoire"}">
+      <label for="md${i}">Ce qui s'est passé, et pourquoi ça m'a marqué</label>
+      <textarea id="md${i}" data-i="${i}" data-f="d" placeholder="Écris ici…">${esc(m.d)}</textarea>
+      <label>Ce que j'ai ressenti</label>
+      <div class="feel">${FEELS.map(f=>`<button data-i="${i}" data-feel="${f}" aria-pressed="${m.f.includes(f)}">${f}</button>`).join("")}</div>
+    </div>`).join("");
+}
+$("memories").addEventListener("input",e=>{const i=e.target.dataset.i,f=e.target.dataset.f;if(f){S.mem[i][f]=e.target.value;save();renderMD()}});
+$("memories").addEventListener("click",e=>{
+  const b=e.target.closest("[data-feel]");if(!b)return;
+  const m=S.mem[b.dataset.i],f=b.dataset.feel;
+  m.f=m.f.includes(f)?m.f.filter(x=>x!==f):[...m.f,f];
+  b.setAttribute("aria-pressed",m.f.includes(f));save();renderMD();
+});
+
+/* ---------- Croquis ---------- */
+const cv=$("cv"),ctx=cv.getContext("2d");let drawing=false,last=null;
+function sizeCanvas(){
+  const r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  const keep=S.sketch;
+  cv.width=Math.round(r.width*dpr);cv.height=Math.round(r.height*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);ctx.lineCap="round";ctx.lineJoin="round";ctx.lineWidth=2.2;
+  if(keep){const img=new Image();img.onload=()=>ctx.drawImage(img,0,0,r.width,r.height);img.src=keep}
+}
+function pos(e){const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}}
+cv.addEventListener("pointerdown",e=>{drawing=true;last=pos(e);cv.setPointerCapture(e.pointerId)});
+cv.addEventListener("pointermove",e=>{
+  if(!drawing)return;const p=pos(e);
+  ctx.strokeStyle=css("--ballpoint");ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(p.x,p.y);ctx.stroke();last=p;
+});
+const end=()=>{if(!drawing)return;drawing=false;try{S.sketch=cv.toDataURL("image/png");save()}catch(e){}};
+cv.addEventListener("pointerup",end);cv.addEventListener("pointercancel",end);
+$("cvClear").onclick=()=>{ctx.clearRect(0,0,cv.width,cv.height);S.sketch=null;save()};
+let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(sizeCanvas,150)});
+
+$("impr").value=S.impr;
+$("impr").addEventListener("input",e=>{S.impr=e.target.value;save();renderMD()});
+
+/* ---------- Export ---------- */
+function renderMD(){
+  const today=new Date().toISOString().slice(0,10);
+  const tasks=S.tasks.filter(t=>t.name.trim()||t.p);
+  const mems=S.mem.filter(m=>m.t.trim()||m.d.trim());
+  const md=`---
+titre: "Impressions à chaud sur mon usage de l'IA"
+exercice: Ex3a — Rough Impressions
+source: "Alcaras, Ricci, Prinetti & de Vries (2025). Artificial Inquiries. https://hal.science/hal-05327878"
+date: ${today}
+frequence: ${S.freq||"non renseignée"}
+tags: [artificial-inquiries, ex3a, usages-ia]${S.example?"\nnote: les tâches sont encore l'exemple de l'outil":""}
+---
+
+# Impressions à chaud sur mon usage de l'IA
+
+## Ce que je confie à l'IA
+
+${tasks.length?tasks.map(t=>`- ${t.name.trim()||"(tâche sans nom)"} : ${t.p} %`).join("\n"):"_À remplir._"}
+
+J'utilise l'IA ${S.freq||"(fréquence à préciser)"}.
+
+## Comment je lui parle
+
+- Échanges courts : ${S.kinds.court} %
+- Conversations longues : ${S.kinds.long} %
+- Dialogues étendus (plus d'un jour) : ${S.kinds.etendu} %
+
+## Conversations marquantes
+
+${mems.length?mems.map((m,i)=>`### ${i+1}. ${m.t.trim()||"Sans titre"}\n\n${m.d.trim()||"_À décrire._"}${m.f.length?`\n\nRessenti : ${m.f.join(", ")}.`:""}`).join("\n\n"):"_À remplir._"}
+
+## Mes impressions
+
+${S.impr.trim()||"_À écrire._"}
+`;
+  $("md").textContent=md;
+}
+$("copy").onclick=()=>{
+  const ok=()=>{$("copyMsg").className="msg ok";$("copyMsg").textContent="Fiche copiée."};
+  const fb=()=>{const r=document.createRange();r.selectNodeContents($("md"));const s=getSelection();s.removeAllRanges();s.addRange(r);$("copyMsg").className="msg";$("copyMsg").textContent="Texte sélectionné : fais Ctrl+C (ou Cmd+C)."};
+  try{navigator.clipboard.writeText($("md").textContent).then(ok,fb)}catch(e){fb()}
+};
+
+renderTasks();renderFreq();renderKinds();renderMem();renderMD();sizeCanvas();
+})();
+</script>
