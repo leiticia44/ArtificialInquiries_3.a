@@ -1,0 +1,140 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix vs: <http://www.w3.org/2003/06/sw-vocab-status/ns#> .
+@prefix o: <http://omeka.org/s/vocabs/o#> .
+@prefix skos: <http://www.w3.org/2004/02/skos/core#> .
+@prefix ma: <http://www.w3.org/ns/ma-ont#> .
+@prefix artinq: <https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#> .
+
+<https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#> a owl:Ontology ;
+    dcterms:title "Artificial Inquiries" .
+
+# ---------------------------------------------------------------
+# Classes — exercice Ex3a « Rough Impressions »
+# ---------------------------------------------------------------
+
+artinq:Participant a rdfs:Class ;
+    rdfs:label "Participant" ;
+    rdfs:comment "Personne qui remplit le vademecum Artificial Inquiries." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:SessionImpressions a rdfs:Class ;
+    rdfs:label "SessionImpressions" ;
+    rdfs:comment "Une séance de 5 minutes de l'Ex3a : impressions à chaud sur son usage des LLM, sans regarder son historique." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:TacheDeleguee a rdfs:Class ;
+    rdfs:label "TacheDeleguee" ;
+    rdfs:comment "Tâche confiée à un LLM, avec la part estimée qu'elle représente dans l'usage." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:ConversationMarquante a rdfs:Class ;
+    rdfs:label "ConversationMarquante" ;
+    rdfs:comment "Conversation avec un LLM qui a laissé une impression durable (2 ou 3 par session)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+# ---------------------------------------------------------------
+# Propriétés — Participant
+# ---------------------------------------------------------------
+
+artinq:metier a rdf:Property ;
+    rdfs:label "a comme métier" ;
+    rdfs:comment "Métier ou profession du participant." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+# ---------------------------------------------------------------
+# Propriétés — SessionImpressions
+# ---------------------------------------------------------------
+
+artinq:aPourParticipant a rdf:Property ;
+    rdfs:label "a pour participant" ;
+    rdfs:comment "Relie une session au participant qui l'a remplie." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:dureeMinuteur a rdf:Property ;
+    rdfs:label "a comme durée du minuteur" ;
+    rdfs:comment "Durée du minuteur en secondes (300 = 5 minutes)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:frequence a rdf:Property ;
+    rdfs:label "a comme fréquence d'usage" ;
+    rdfs:comment "Fréquence d'usage du LLM : plusieurs fois par jour, tous les jours, chaque semaine, moins souvent." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:llmPrincipal a rdf:Property ;
+    rdfs:label "a comme LLM principal" ;
+    rdfs:comment "LLM le plus utilisé (ChatGPT, Claude, Le Chat…)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:aPourTache a rdf:Property ;
+    rdfs:label "a pour tâche déléguée" ;
+    rdfs:comment "Relie une session à une tâche confiée au LLM." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:partEchangesCourts a rdf:Property ;
+    rdfs:label "a comme part d'échanges courts" ;
+    rdfs:comment "Pourcentage estimé de conversations à une seule question-réponse." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:partConversationsLongues a rdf:Property ;
+    rdfs:label "a comme part de conversations longues" ;
+    rdfs:comment "Pourcentage estimé de conversations à plusieurs allers-retours." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:partDialoguesEtendus a rdf:Property ;
+    rdfs:label "a comme part de dialogues étendus" ;
+    rdfs:comment "Pourcentage estimé de conversations qui durent plus d'une journée." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:aPourConversationMarquante a rdf:Property ;
+    rdfs:label "a pour conversation marquante" ;
+    rdfs:comment "Relie une session à une conversation marquante." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:impression a rdf:Property ;
+    rdfs:label "a comme impression" ;
+    rdfs:comment "Texte libre du cadre « Write down your impressions »." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+# ---------------------------------------------------------------
+# Propriétés — TacheDeleguee
+# ---------------------------------------------------------------
+
+artinq:pourcentage a rdf:Property ;
+    rdfs:label "a comme pourcentage" ;
+    rdfs:comment "Part estimée (0 à 100) de la tâche dans l'usage du LLM." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+# ---------------------------------------------------------------
+# Propriétés — ConversationMarquante
+# ---------------------------------------------------------------
+
+artinq:rang a rdf:Property ;
+    rdfs:label "a comme rang" ;
+    rdfs:comment "Numéro de la conversation marquante dans la session (1, 2 ou 3)." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .
+
+artinq:ressenti a rdf:Property ;
+    rdfs:label "a comme ressenti" ;
+    rdfs:comment "Émotion associée : enthousiasme, frustration, amusement, inquiétude, surprise, doute éthique." ;
+    rdfs:domain o:Resource ;
+    vs:term_status "experimental" .

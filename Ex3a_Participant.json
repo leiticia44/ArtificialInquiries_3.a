@@ -1,0 +1,56 @@
+{
+  "o:label": "Ex3a - Participant",
+  "o:resource_class": {
+    "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+    "vocabulary_label": "Artificial Inquiries",
+    "local_name": "Participant",
+    "label": "Participant"
+  },
+  "o:title_property": {
+    "vocabulary_namespace_uri": "http://purl.org/dc/terms/",
+    "vocabulary_label": "Dublin Core",
+    "local_name": "title",
+    "label": "Title"
+  },
+  "o:description_property": null,
+  "o:resource_template_property": [
+    {
+      "o:alternate_label": "Pseudo",
+      "o:alternate_comment": null,
+      "o:is_required": true,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "http://purl.org/dc/terms/",
+      "vocabulary_label": "Dublin Core",
+      "local_name": "title",
+      "label": "Title"
+    },
+    {
+      "o:alternate_label": "Métier",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "metier",
+      "label": "a comme métier"
+    }
+  ]
+}

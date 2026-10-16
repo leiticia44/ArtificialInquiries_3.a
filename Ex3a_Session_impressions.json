@@ -1,0 +1,246 @@
+{
+  "o:label": "Ex3a - Session d'impressions",
+  "o:resource_class": {
+    "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+    "vocabulary_label": "Artificial Inquiries",
+    "local_name": "SessionImpressions",
+    "label": "SessionImpressions"
+  },
+  "o:title_property": {
+    "vocabulary_namespace_uri": "http://purl.org/dc/terms/",
+    "vocabulary_label": "Dublin Core",
+    "local_name": "title",
+    "label": "Title"
+  },
+  "o:description_property": null,
+  "o:resource_template_property": [
+    {
+      "o:alternate_label": "Titre de la session",
+      "o:alternate_comment": null,
+      "o:is_required": true,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "http://purl.org/dc/terms/",
+      "vocabulary_label": "Dublin Core",
+      "local_name": "title",
+      "label": "Title"
+    },
+    {
+      "o:alternate_label": "Date",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "http://purl.org/dc/terms/",
+      "vocabulary_label": "Dublin Core",
+      "local_name": "date",
+      "label": "Date"
+    },
+    {
+      "o:alternate_label": "Participant",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "resource:item"
+      ],
+      "data_types": [
+        {
+          "name": "resource:item",
+          "label": "Item"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "aPourParticipant",
+      "label": "a pour participant"
+    },
+    {
+      "o:alternate_label": "LLM principal",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "llmPrincipal",
+      "label": "a comme LLM principal"
+    },
+    {
+      "o:alternate_label": "Fréquence d'usage",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "frequence",
+      "label": "a comme fréquence d'usage"
+    },
+    {
+      "o:alternate_label": "Durée du minuteur (secondes)",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "dureeMinuteur",
+      "label": "a comme durée du minuteur"
+    },
+    {
+      "o:alternate_label": "Tâches déléguées",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "resource:item"
+      ],
+      "data_types": [
+        {
+          "name": "resource:item",
+          "label": "Item"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "aPourTache",
+      "label": "a pour tâche déléguée"
+    },
+    {
+      "o:alternate_label": "Échanges courts (%)",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "partEchangesCourts",
+      "label": "a comme part d'échanges courts"
+    },
+    {
+      "o:alternate_label": "Conversations longues (%)",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "partConversationsLongues",
+      "label": "a comme part de conversations longues"
+    },
+    {
+      "o:alternate_label": "Dialogues étendus (%)",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "partDialoguesEtendus",
+      "label": "a comme part de dialogues étendus"
+    },
+    {
+      "o:alternate_label": "Conversations marquantes",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "resource:item"
+      ],
+      "data_types": [
+        {
+          "name": "resource:item",
+          "label": "Item"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "aPourConversationMarquante",
+      "label": "a pour conversation marquante"
+    },
+    {
+      "o:alternate_label": "Mes impressions",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "literal"
+      ],
+      "data_types": [
+        {
+          "name": "literal",
+          "label": "Text"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquiries",
+      "local_name": "impression",
+      "label": "a comme impression"
+    }
+  ]
+}
