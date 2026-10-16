@@ -19,6 +19,14 @@ Consignes du vademecum (pages 16-17) :
 
 Ces impressions servent ensuite de point de comparaison avec l'historique réel, dans l'Ex3b « Rolling the Dice ».
 
+### Le formulaire papier
+
+| Consignes (page 16) | Formulaire à remplir (page 17) |
+|---|---|
+| ![Consignes de l'Ex3a, page 16 du vademecum](ex3a_consignes.png) | ![Formulaire papier de l'Ex3a, page 17 du vademecum](ex3a_formulaire.png) |
+
+*Copies d'écran du vademecum* Artificial Inquiries *(CC BY-NC).*
+
 ## 2. Ce que fait l'outil
 
 | Consigne du vademecum | Fonction dans l'outil |
@@ -60,13 +68,63 @@ Pile technique pour l'installation locale : **Apache + PHP + MySQL** (voir la [d
 
 Voir [`diagram_class.md`](diagram_class.md) (diagramme de classes Mermaid).
 
-## 5. Structure du dépôt
+## 5. Traduction du modèle dans Omeka S
+
+### Vocabulaire `artinq`
+
+Le fichier [`artificial_inquiries.ttl`](artificial_inquiries.ttl) définit le vocabulaire **Artificial Inquiries** :
+
+- préfixe : `artinq`
+- espace de noms : `https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#`
+
+| Classe du diagramme | Classe RDF |
+|---|---|
+| `Participant` | `artinq:Participant` |
+| `SessionImpressions` | `artinq:SessionImpressions` |
+| `TacheDeleguee` | `artinq:TacheDeleguee` |
+| `ConversationMarquante` | `artinq:ConversationMarquante` |
+
+| Attribut ou relation du diagramme | Propriété |
+|---|---|
+| `Participant.metier` | `artinq:metier` |
+| Participant → Session | `artinq:aPourParticipant` |
+| `dureeMinuteur`, `frequence`, `llmPrincipal` | `artinq:dureeMinuteur`, `artinq:frequence`, `artinq:llmPrincipal` |
+| Session → TacheDeleguee | `artinq:aPourTache` |
+| `TacheDeleguee.pourcentage` | `artinq:pourcentage` |
+| `StructureConversations` (3 parts) | `artinq:partEchangesCourts`, `artinq:partConversationsLongues`, `artinq:partDialoguesEtendus` |
+| Session → ConversationMarquante | `artinq:aPourConversationMarquante` |
+| `ConversationMarquante.rang`, `ressentis` | `artinq:rang`, `artinq:ressenti` |
+| `Impression.texte` | `artinq:impression` |
+| titres, dates, descriptions | `dcterms:title`, `dcterms:date`, `dcterms:description` |
+| `Croquis` | média (image PNG) attaché à la session |
+
+### Modèles de ressource
+
+Le dossier [`resource-template/`](resource-template/) contient les modèles de ressource exportés d'Omeka S :
+
+| Fichier | Classe |
+|---|---|
+| `Ex3a_Session_impressions.json` | `artinq:SessionImpressions` |
+| `Ex3a_Tache_deleguee.json` | `artinq:TacheDeleguee` |
+| `Ex3a_Conversation_marquante.json` | `artinq:ConversationMarquante` |
+| `Ex3a_Participant.json` | `artinq:Participant` |
+
+### Base de données
+
+`omk.sql` est l'export de la base MySQL de l'installation Omeka S locale, avec les contenus de test.
+
+## 6. Structure du dépôt
 
 ```
 ArtificialInquiries_3a/
 ├── README.md                  ← ce fichier
 ├── diagram_class.md           ← diagramme de classes (Mermaid)
-└── impressions-a-chaud.html   ← l'outil
+├── impressions-a-chaud.html   ← l'outil
+├── ex3a_consignes.png         ← consignes papier (p. 16)
+├── ex3a_formulaire.png        ← formulaire papier (p. 17)
+├── artificial_inquiries.ttl   ← vocabulaire artinq
+├── resource-template/         ← modèles de ressource Omeka S (JSON)
+└── omk.sql                    ← export de la base Omeka S
 ```
 
 ## Licence
