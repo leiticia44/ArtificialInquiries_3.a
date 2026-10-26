@@ -113,13 +113,56 @@ Le dossier [`resource-template/`](resource-template/) contient les modèles de r
 
 `omk.sql` est l'export de la base MySQL de l'installation Omeka S locale, avec les contenus de test.
 
-## 6. Structure du dépôt
+## 6. Interface de gestion (CRUD) : `response.html`
+
+Page HTML-CSS-JavaScript, sans framework, qui gère les réponses de l'exercice directement dans Omeka S.
+
+En ligne (GitHub Pages) : **https://leiticia44.github.io/ArtificialInquiries_3a/response.html**
+
+### Ce que fait la page
+
+| Action | Ce que fait l'interface | Appel à l'API Omeka S |
+|---|---|---|
+| **Create** | Nouvelle session avec participant, tâches (total 100 %), structure des conversations (total 100 %), 2 ou 3 conversations marquantes et impressions | `POST /api/items` (un contenu par tâche, par conversation, puis la session qui les relie) |
+| **Read** | Liste des sessions, puis détail d'une session | `GET /api/items?resource_class_id=…` et `GET /api/items/{id}` |
+| **Update** | Modification d'une session et de ses tâches et conversations | `PUT /api/items/{id}` (les tâches et conversations retirées sont supprimées) |
+| **Delete** | Suppression d'une session, de ses tâches et de ses conversations (le participant est gardé) | `DELETE /api/items/{id}` |
+
+Au démarrage, la page lit les identifiants du vocabulaire `artinq` dans Omeka S (`/api/resource_classes`, `/api/properties`, `/api/resource_templates`) : aucun numéro n'est écrit en dur.
+
+### Authentification
+
+| Méthode | État | Explication |
+|---|---|---|
+| **Locale (clé API Omeka S)** | ✅ fonctionne | `key_identity` + `key_credential`, créées dans Omeka S (Utilisateurs → Modifier → Clés d'API). Sans clé : lecture seule des contenus publics. |
+| **Google** | ✅ identification | Google Identity Services : vérifie le nom et l'e-mail. Il faut un identifiant client Google, avec les origines `https://leiticia44.github.io` et `http://localhost` autorisées. L'écriture dans Omeka demande toujours la clé API. |
+| **GitHub** | ⏳ à venir | GitHub OAuth demande un « secret client » qui ne peut pas être dans une page publique : il faut un petit serveur intermédiaire. |
+| **CAS (université)** | ⏳ à venir | Se fait côté Omeka S, avec un module d'authentification CAS : on se connecte à Omeka avec son compte Paris 8, puis on crée sa clé API. |
+
+### Autoriser la page à appeler Omeka S (CORS)
+
+La page publiée sur GitHub Pages appelle l'API d'une autre adresse (`http://localhost/omekas/api`). Il faut l'autoriser en ajoutant ces lignes **tout en haut** du fichier `.htaccess` du dossier `omekas` :
+
+```apache
+Header always set Access-Control-Allow-Origin "*"
+Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+Header always set Access-Control-Allow-Headers "Content-Type"
+Header always set Access-Control-Allow-Private-Network "true"
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ $1 [R=200,L]
+```
+
+Puis redémarrer Apache dans XAMPP. Pour tester sans GitHub Pages, on peut aussi copier `response.html` dans `htdocs` et l'ouvrir avec `http://localhost/response.html` (même adresse que l'API, donc pas besoin de CORS).
+
+## 7. Structure du dépôt
 
 ```
 ArtificialInquiries_3a/
 ├── README.md                  ← ce fichier
 ├── diagram_class.md           ← diagramme de classes (Mermaid)
 ├── impressions-a-chaud.html   ← l'outil
+├── response.html              ← interface CRUD connectée à Omeka S
 ├── ex3a_consignes.png         ← consignes papier (p. 16)
 ├── ex3a_formulaire.png        ← formulaire papier (p. 17)
 ├── artificial_inquiries.ttl   ← vocabulaire artinq

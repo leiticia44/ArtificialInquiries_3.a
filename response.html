@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ex3a · Gestion des réponses</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400&display=swap">
+<style>
+:root{
+  --paper:#f5f6f8; --sheet:#fff; --ink:#191c25; --muted:#5c6273; --rule:#dcdfe6;
+  --accent:#2747c9; --accent-soft:#e6eafb; --danger:#b3261e; --danger-soft:#fbe9e7; --ok:#1f7a4d; --ok-soft:#e3f4ea; --warn:#a4570b;
+  --c1:#2747c9; --c2:#d0632e; --c3:#2c8a6a;
+  --display:"Instrument Serif", Georgia, serif; --body:"Instrument Sans", "Helvetica Neue", Arial, sans-serif; --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#111319; --sheet:#1a1d26; --ink:#e8eaf1; --muted:#9aa1b3; --rule:#2d313d;
+  --accent:#8fa5ff; --accent-soft:#232a45; --danger:#ff8a80; --danger-soft:#3a1f1d; --ok:#5fcf97; --ok-soft:#1c3328; --warn:#f0a35a;
+  --c1:#8fa5ff; --c2:#f08a57; --c3:#4fc79c; color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;padding:24px 16px 64px}
+.wrap{max-width:1080px;margin:0 auto;display:flex;flex-direction:column;gap:24px}
+h1,h2,h3{font-family:var(--display);font-weight:400;margin:0;line-height:1.15}
+h1{font-size:clamp(2rem,5vw,3rem)} h2{font-size:1.8rem} h3{font-size:1.35rem}
+p{margin:0}
+.eyebrow{font-family:var(--mono);font-size:.74rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.muted{color:var(--muted);font-size:.92rem}
+header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--rule);padding-bottom:16px}
+.who{display:flex;align-items:center;gap:10px;font-size:.92rem}
+.who img{width:32px;height:32px;border-radius:50%}
+.pill{display:inline-block;font-family:var(--mono);font-size:.75rem;padding:3px 10px;border-radius:999px;background:var(--accent-soft);color:var(--accent)}
+.pill.off{background:var(--danger-soft);color:var(--danger)} .pill.on{background:var(--ok-soft);color:var(--ok)}
+.card{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--muted)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:8px 10px;width:100%}
+textarea{min-height:90px;resize:vertical}
+input[type=range]{padding:0;accent-color:var(--accent)}
+input[type=checkbox]{width:auto}
+button{font:inherit;font-size:.92rem;font-weight:500;border:1px solid var(--rule);background:var(--sheet);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer}
+button:hover:not(:disabled){border-color:var(--accent)}
+button:disabled{opacity:.45;cursor:not-allowed}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--sheet)}
+button.danger{color:var(--danger)} button.danger:hover:not(:disabled){border-color:var(--danger)}
+button.ghost{border-color:transparent;background:transparent;color:var(--muted)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs button[aria-selected="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+.msg{font-size:.9rem;padding:10px 14px;border-radius:6px}
+.msg.ok{background:var(--ok-soft);color:var(--ok)} .msg.err{background:var(--danger-soft);color:var(--danger)} .msg.info{background:var(--accent-soft);color:var(--accent)}
+.sessions{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.s-card{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.s-card h3{font-size:1.25rem}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.88rem}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;background:var(--rule)}
+.bar i{display:block;height:100%}
+.sub{border-top:1px dashed var(--rule);padding-top:12px;display:flex;flex-direction:column;gap:10px}
+.line{display:grid;grid-template-columns:1fr 110px 36px;gap:8px;align-items:center}
+.conv{border:1px solid var(--rule);border-radius:6px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.feel{display:flex;flex-wrap:wrap;gap:6px}
+.feel label{flex-direction:row;align-items:center;gap:4px;font-size:.85rem;color:var(--ink);border:1px solid var(--rule);border-radius:999px;padding:3px 10px;cursor:pointer}
+.provider{border:1px solid var(--rule);border-radius:6px;padding:14px;display:flex;flex-direction:column;gap:8px}
+code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);padding:1px 5px;border-radius:3px}
+.empty{text-align:center;padding:32px;color:var(--muted)}
+[hidden]{display:none!important}
+@media (max-width:720px){.grid2,.grid3{grid-template-columns:1fr}.line{grid-template-columns:1fr 80px 36px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div>
+    <span class="eyebrow">Artificial Inquiries · Ex3a · Omeka S</span>
+    <h1>Gestion des réponses</h1>
+    <p class="muted">Créer, lire, modifier et supprimer les sessions « Impressions à chaud » enregistrées dans Omeka S.</p>
+  </div>
+  <div class="who">
+    <img id="whoPic" alt="" hidden>
+    <span id="whoName" class="muted">Non connectée</span>
+    <span id="whoMode" class="pill off">lecture seule</span>
+    <button id="btnLogout" class="ghost" hidden>Se déconnecter</button>
+  </div>
+</header>
+
+<!-- ============ CONNEXION ============ -->
+<section class="card" id="authCard" aria-labelledby="authTitle">
+  <h2 id="authTitle">Connexion</h2>
+  <label>Adresse de l’API Omeka S
+    <input id="apiUrl" type="url" value="http://localhost/omekas/api" spellcheck="false">
+  </label>
+  <div class="tabs" role="tablist">
+    <button role="tab" data-tab="local" aria-selected="true">Omeka (local)</button>
+    <button role="tab" data-tab="google" aria-selected="false">Google</button>
+    <button role="tab" data-tab="github" aria-selected="false">GitHub</button>
+    <button role="tab" data-tab="cas" aria-selected="false">CAS (université)</button>
+  </div>
+
+  <div data-panel="local" class="provider">
+    <p class="muted">Dans Omeka S : <b>Utilisateurs → ton compte → Modifier → onglet « Clés d’API » → Nouvelle clé</b>. Copie les deux valeurs ici.</p>
+    <div class="grid2">
+      <label>key_identity<input id="keyId" autocomplete="username" spellcheck="false"></label>
+      <label>key_credential<input id="keyCred" type="password" autocomplete="current-password" spellcheck="false"></label>
+    </div>
+    <label style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)"><input type="checkbox" id="remember"> Rester connectée sur cet ordinateur</label>
+    <div class="row">
+      <button class="primary" id="btnLogin">Se connecter</button>
+      <button id="btnPublic">Continuer en lecture seule</button>
+    </div>
+  </div>
+
+  <div data-panel="google" class="provider" hidden>
+    <p class="muted">Google vérifie <b>qui tu es</b>. Pour enregistrer dans Omeka, il faut aussi la clé API Omeka (onglet « Omeka (local) »).</p>
+    <label>Identifiant client Google (OAuth Client ID)
+      <input id="gClientId" placeholder="xxxxxxxx.apps.googleusercontent.com" spellcheck="false">
+    </label>
+    <div class="row"><button id="btnGoogleInit">Activer la connexion Google</button></div>
+    <div id="gButton"></div>
+  </div>
+
+  <div data-panel="github" class="provider" hidden>
+    <p><b>Connexion GitHub : nécessite un petit serveur.</b></p>
+    <p class="muted">GitHub demande un « secret client » qu’on ne peut pas mettre dans une page publique. Il faut un service intermédiaire (par exemple une fonction serverless) qui échange le code GitHub contre un jeton, puis associe le compte GitHub à une clé Omeka.</p>
+    <button disabled>Se connecter avec GitHub (à venir)</button>
+  </div>
+
+  <div data-panel="cas" class="provider" hidden>
+    <p><b>Connexion CAS (compte université) : se fait côté Omeka S.</b></p>
+    <p class="muted">Le CAS de l’université redirige vers un serveur déclaré. On installe un module d’authentification CAS dans Omeka S : les étudiants se connectent alors à Omeka avec leur compte Paris 8, puis récupèrent leur clé API.</p>
+    <button disabled>Se connecter avec le CAS (à venir)</button>
+  </div>
+
+  <div id="authMsg" class="msg" hidden role="status"></div>
+</section>
+
+<!-- ============ LISTE ============ -->
+<section class="card" id="listCard" hidden aria-labelledby="listTitle">
+  <div class="row" style="justify-content:space-between">
+    <h2 id="listTitle">Sessions enregistrées</h2>
+    <div class="row">
+      <button id="btnReload">Actualiser</button>
+      <button class="primary" id="btnNew">Nouvelle session</button>
+    </div>
+  </div>
+  <div id="listMsg" class="msg" hidden role="status"></div>
+  <div id="sessions" class="sessions"></div>
+</section>
+
+<!-- ============ FORMULAIRE ============ -->
+<section class="card" id="formCard" hidden aria-labelledby="formTitle">
+  <div class="row" style="justify-content:space-between">
+    <h2 id="formTitle">Nouvelle session</h2>
+    <button class="ghost" id="btnCancel">Annuler</button>
+  </div>
+
+  <div class="grid3">
+    <label>Titre de la session *<input id="fTitle" placeholder="Session Ex3a – prénom – date"></label>
+    <label>Date<input id="fDate" type="date"></label>
+    <label>LLM principal<input id="fLlm" placeholder="ChatGPT, Claude, Le Chat…"></label>
+  </div>
+  <div class="grid3">
+    <label>Fréquence d’usage
+      <select id="fFreq">
+        <option value="">—</option>
+        <option>plusieurs fois par jour</option><option>tous les jours</option><option>chaque semaine</option><option>moins souvent</option>
+      </select>
+    </label>
+    <label>Durée du minuteur (secondes)<input id="fDuree" type="number" min="0" value="300"></label>
+    <label>Participant
+      <select id="fPart"></select>
+    </label>
+  </div>
+  <div class="grid2" id="newPart" hidden>
+    <label>Pseudo du nouveau participant *<input id="fPseudo"></label>
+    <label>Métier<input id="fMetier"></label>
+  </div>
+
+  <div class="sub">
+    <h3>Structure des conversations</h3>
+    <div class="bar" id="fBar"></div>
+    <div class="grid3">
+      <label>Échanges courts : <b id="vC">60 %</b><input type="range" id="pC" min="0" max="100" step="5" value="60"></label>
+      <label>Conversations longues : <b id="vL">30 %</b><input type="range" id="pL" min="0" max="100" step="5" value="30"></label>
+      <label>Dialogues étendus : <b id="vE">10 %</b><input type="range" id="pE" min="0" max="100" step="5" value="10"></label>
+    </div>
+    <p class="muted" id="partsMsg"></p>
+  </div>
+
+  <div class="sub">
+    <div class="row" style="justify-content:space-between"><h3>Tâches déléguées à l’IA</h3><span class="muted" id="tasksTotal"></span></div>
+    <div id="tasks" style="display:flex;flex-direction:column;gap:8px"></div>
+    <div class="row"><button id="btnAddTask">Ajouter une tâche</button></div>
+  </div>
+
+  <div class="sub">
+    <div class="row" style="justify-content:space-between"><h3>Conversations marquantes (2 ou 3)</h3></div>
+    <div id="convs" style="display:flex;flex-direction:column;gap:10px"></div>
+    <div class="row"><button id="btnAddConv">Ajouter une conversation</button></div>
+  </div>
+
+  <div class="sub">
+    <label>Mes impressions<textarea id="fImpr" placeholder="Ce que je retiens de ces 5 minutes…"></textarea></label>
+  </div>
+
+  <div id="formMsg" class="msg" hidden role="status"></div>
+  <div class="row">
+    <button class="primary" id="btnSave">Enregistrer dans Omeka S</button>
+    <button class="danger" id="btnDelete" hidden>Supprimer cette session</button>
+  </div>
+</section>
+
+<footer class="muted">Exercice Ex3a « Rough Impressions » · vocabulaire <code>artinq</code> · d’après <i>Artificial Inquiries</i> (Alcaras et al., 2025). Dépôt : ArtificialInquiries_3a.</footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* ---------- état ---------- */
+const FEELS = ['enthousiasme','frustration','amusement','inquiétude','surprise','doute éthique'];
+const CLASSES = ['Participant','SessionImpressions','TacheDeleguee','ConversationMarquante'];
+const S = { api:'', ident:'', cred:'', ids:{cls:{},prop:{},tpl:{}}, participants:[], sessions:[], editing:null };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = { get(k){ try{ return sessionStorage.getItem(k) ?? localStorage.getItem(k); }catch(e){ return null; } },
+  set(k,v,persist){ try{ (persist?localStorage:sessionStorage).setItem(k,v); }catch(e){} },
+  clear(){ try{ ['ident','cred','api'].forEach(k=>{sessionStorage.removeItem(k);localStorage.removeItem(k);}); }catch(e){} } };
+function show(el, text, kind){ el.hidden = !text; el.textContent = text || ''; el.className = 'msg ' + (kind||'info'); }
+const canWrite = () => Boolean(S.ident && S.cred);
+
+/* ---------- API Omeka S ---------- */
+async function api(path, { method='GET', params={}, body } = {}){
+  const p = new URLSearchParams(params);
+  if (S.ident && S.cred){ p.set('key_identity', S.ident); p.set('key_credential', S.cred); }
+  const url = S.api.replace(/\/+$/,'') + '/' + path + (p.toString() ? '?' + p : '');
+  let r;
+  try{
+    r = await fetch(url, { method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined });
+  }catch(e){
+    throw new Error("Impossible de joindre l’API. Vérifie qu’Apache et MySQL sont allumés, que l’adresse est juste, et que l’API autorise cette page (CORS, voir le README).");
+  }
+  let data = null; try{ data = await r.json(); }catch(e){}
+  if (!r.ok){
+    const detail = data && data.errors ? Object.values(data.errors).flat().join(' ') : r.statusText;
+    if (r.status === 403) throw new Error('Accès refusé (403) : clé API invalide ou droits insuffisants. ' + detail);
+    throw new Error('Erreur ' + r.status + ' : ' + detail);
+  }
+  return data;
+}
+
+/* lit les identifiants des classes, propriétés et modèles de ressource */
+async function loadModel(){
+  const classes = await api('resource_classes', { params:{ vocabulary_prefix:'artinq', per_page:50 } });
+  classes.forEach(c => S.ids.cls[c['o:local_name']] = c['o:id']);
+  const missing = CLASSES.filter(c => !S.ids.cls[c]);
+  if (missing.length) throw new Error('Vocabulaire artinq incomplet dans Omeka S (classes manquantes : ' + missing.join(', ') + '). Importe artificial_inquiries.ttl.');
+  const props = await api('properties', { params:{ vocabulary_prefix:'artinq', per_page:100 } });
+  props.forEach(p => S.ids.prop['artinq:' + p['o:local_name']] = p['o:id']);
+  for (const term of ['dcterms:title','dcterms:date','dcterms:description']){
+    const r = await api('properties', { params:{ term } });
+    if (r[0]) S.ids.prop[term] = r[0]['o:id'];
+  }
+  const tpls = await api('resource_templates', { params:{ per_page:100 } });
+  tpls.forEach(t => {
+    const cid = t['o:resource_class'] && t['o:resource_class']['o:id'];
+    const name = Object.keys(S.ids.cls).find(k => S.ids.cls[k] === cid);
+    if (name && !S.ids.tpl[name]) S.ids.tpl[name] = t['o:id'];
+  });
+}
+
+/* ---------- conversion valeurs Omeka <-> JS ---------- */
+const lit = (term, val) => (val === '' || val == null) ? [] : [{ type:'literal', property_id:S.ids.prop[term], '@value':String(val) }];
+const lits = (term, vals) => vals.filter(Boolean).map(v => ({ type:'literal', property_id:S.ids.prop[term], '@value':String(v) }));
+const res = (term, ids) => ids.filter(Boolean).map(id => ({ type:'resource', property_id:S.ids.prop[term], value_resource_id:Number(id) }));
+function body(cls, fields){
+  const b = { 'o:resource_class':{ 'o:id':S.ids.cls[cls] }, 'o:is_public':true };
+  if (S.ids.tpl[cls]) b['o:resource_template'] = { 'o:id':S.ids.tpl[cls] };
+  for (const [term, vals] of Object.entries(fields)) if (vals.length) b[term] = vals;
+  return b;
+}
+const val  = (it, term) => (it[term] && it[term][0]) ? (it[term][0]['@value'] ?? it[term][0]['display_title'] ?? '') : '';
+const vals = (it, term) => (it[term] || []).map(x => x['@value']).filter(Boolean);
+const refs = (it, term) => (it[term] || []).map(x => x.value_resource_id).filter(Boolean);
+const saveItem = (id, b) => id ? api('items/' + id, { method:'PUT', body:b }) : api('items', { method:'POST', body:b });
+
+/* ---------- connexion ---------- */
+async function connect(ident, cred, persist){
+  const m = $('authMsg');
+  S.api = $('apiUrl').value.trim(); S.ident = ident; S.cred = cred;
+  show(m, 'Connexion à Omeka S…', 'info');
+  try{
+    if (canWrite()) await api('items', { params:{ per_page:1 } });
+    await loadModel();
+    store.set('api', S.api, persist);
+    if (canWrite()){ store.set('ident', ident, persist); store.set('cred', cred, persist); }
+    setWho();
+    show(m, canWrite() ? 'Connectée : tu peux créer, modifier et supprimer.' : 'Lecture seule : tu peux consulter les sessions publiques.', 'ok');
+    $('listCard').hidden = false;
+    await loadList();
+  }catch(e){
+    S.ident = S.cred = '';
+    setWho();
+    show(m, e.message, 'err');
+  }
+}
+function setWho(){
+  $('whoMode').textContent = canWrite() ? 'lecture + écriture' : 'lecture seule';
+  $('whoMode').className = 'pill ' + (canWrite() ? 'on' : 'off');
+  if (!S.googleUser) $('whoName').textContent = canWrite() ? 'Clé API …' + S.ident.slice(-4) : 'Non connectée';
+  $('btnLogout').hidden = !canWrite() && !S.googleUser;
+  $('btnNew').disabled = !canWrite();
+}
+$('btnLogin').onclick = () => {
+  const i = $('keyId').value.trim(), c = $('keyCred').value.trim();
+  if (!i || !c){ show($('authMsg'), 'Remplis key_identity et key_credential.', 'err'); return; }
+  connect(i, c, $('remember').checked);
+};
+$('btnPublic').onclick = () => connect('', '', false);
+$('btnLogout').onclick = () => {
+  store.clear(); S.ident = S.cred = ''; S.googleUser = null;
+  $('whoPic').hidden = true; $('keyCred').value = '';
+  setWho(); $('formCard').hidden = true; loadList();
+  show($('authMsg'), 'Tu es déconnectée.', 'info');
+};
+
+/* onglets */
+document.querySelectorAll('[role=tab]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('[role=tab]').forEach(x => x.setAttribute('aria-selected', x === b));
+  document.querySelectorAll('[data-panel]').forEach(p => p.hidden = p.dataset.panel !== b.dataset.tab);
+});
+
+/* Google Identity Services : identifie la personne (nom, e-mail) */
+$('gClientId').value = store.get('gClientId') || '';
+$('btnGoogleInit').onclick = () => {
+  const id = $('gClientId').value.trim();
+  if (!id){ show($('authMsg'), 'Colle d’abord ton identifiant client Google.', 'err'); return; }
+  store.set('gClientId', id, true);
+  const s = document.createElement('script');
+  s.src = 'https://accounts.google.com/gsi/client'; s.async = true;
+  s.onload = () => {
+    google.accounts.id.initialize({ client_id:id, callback: r => {
+      const payload = JSON.parse(decodeURIComponent(escape(atob(r.credential.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')))));
+      S.googleUser = payload;
+      $('whoName').textContent = payload.name + ' (' + payload.email + ')';
+      if (payload.picture){ $('whoPic').src = payload.picture; $('whoPic').hidden = false; }
+      setWho();
+      show($('authMsg'), 'Identité Google vérifiée. Ajoute ta clé API Omeka pour pouvoir enregistrer.', 'ok');
+    }});
+    google.accounts.id.renderButton($('gButton'), { theme:'outline', size:'large', text:'signin_with', locale:'fr' });
+  };
+  s.onerror = () => show($('authMsg'), 'Le service Google n’a pas pu être chargé.', 'err');
+  document.head.appendChild(s);
+};
+
+/* ---------- READ : liste ---------- */
+async function loadList(){
+  const box = $('sessions'), m = $('listMsg');
+  if (!S.ids.cls.SessionImpressions){ box.innerHTML = ''; return; }
+  show(m, 'Chargement…', 'info');
+  try{
+    const [sessions, parts] = await Promise.all([
+      api('items', { params:{ resource_class_id:S.ids.cls.SessionImpressions, per_page:100, sort_by:'created', sort_order:'desc' } }),
+      api('items', { params:{ resource_class_id:S.ids.cls.Participant, per_page:100 } })
+    ]);
+    S.sessions = sessions; S.participants = parts;
+    show(m, '');
+    if (!sessions.length){ box.innerHTML = '<p class="empty">Aucune session pour l’instant. Clique sur « Nouvelle session ».</p>'; return; }
+    box.innerHTML = sessions.map(it => {
+      const pid = refs(it, 'artinq:aPourParticipant')[0];
+      const p = parts.find(x => x['o:id'] === pid);
+      const c = +val(it,'artinq:partEchangesCourts') || 0, l = +val(it,'artinq:partConversationsLongues') || 0, e = +val(it,'artinq:partDialoguesEtendus') || 0;
+      return `<article class="s-card">
+        <span class="eyebrow">#${it['o:id']} · ${esc(val(it,'dcterms:date') || 'sans date')}</span>
+        <h3>${esc(it['o:title'] || val(it,'dcterms:title') || 'Sans titre')}</h3>
+        <dl class="kv">
+          <dt>Participant</dt><dd>${esc(p ? p['o:title'] : '—')}</dd>
+          <dt>LLM</dt><dd>${esc(val(it,'artinq:llmPrincipal') || '—')}</dd>
+          <dt>Fréquence</dt><dd>${esc(val(it,'artinq:frequence') || '—')}</dd>
+          <dt>Tâches</dt><dd>${refs(it,'artinq:aPourTache').length}</dd>
+          <dt>Conversations</dt><dd>${refs(it,'artinq:aPourConversationMarquante').length}</dd>
+        </dl>
+        <div class="bar" title="courts ${c} % · longs ${l} % · étendus ${e} %"><i style="width:${c}%;background:var(--c1)"></i><i style="width:${l}%;background:var(--c2)"></i><i style="width:${e}%;background:var(--c3)"></i></div>
+        <div class="row">
+          <button data-open="${it['o:id']}">${canWrite() ? 'Ouvrir / modifier' : 'Voir le détail'}</button>
+          <button class="danger" data-del="${it['o:id']}" ${canWrite() ? '' : 'disabled'}>Supprimer</button>
+        </div>
+      </article>`;
+    }).join('');
+  }catch(e){ show(m, e.message, 'err'); }
+}
+$('btnReload').onclick = loadList;
+$('sessions').addEventListener('click', e => {
+  const o = e.target.closest('[data-open]'), d = e.target.closest('[data-del]');
+  if (o) openForm(+o.dataset.open);
+  if (d) removeSession(+d.dataset.del);
+});
+
+/* ---------- formulaire ---------- */
+function partOptions(selected){
+  $('fPart').innerHTML = '<option value="">— aucun —</option>' +
+    S.participants.map(p => `<option value="${p['o:id']}" ${p['o:id'] === selected ? 'selected' : ''}>${esc(p['o:title'])}</option>`).join('') +
+    '<option value="new">+ Nouveau participant…</option>';
+  $('newPart').hidden = true;
+}
+$('fPart').onchange = () => $('newPart').hidden = $('fPart').value !== 'new';
+
+function taskRow(t = { id:null, name:'', pct:0 }){
+  const d = document.createElement('div'); d.className = 'line'; d.dataset.id = t.id || '';
+  d.innerHTML = `<input class="tName" placeholder="Ex. : résumer des articles" value="${esc(t.name)}" aria-label="Nom de la tâche">
+    <input class="tPct" type="number" min="0" max="100" step="5" value="${t.pct}" aria-label="Pourcentage">
+    <button class="ghost" title="Retirer" aria-label="Retirer la tâche">✕</button>`;
+  d.querySelector('button').onclick = () => { d.remove(); totals(); };
+  d.querySelector('.tPct').oninput = totals;
+  $('tasks').appendChild(d);
+}
+function convRow(c = { id:null, title:'', rang:'', desc:'', feel:[] }){
+  const d = document.createElement('div'); d.className = 'conv'; d.dataset.id = c.id || '';
+  const n = $('convs').children.length + 1;
+  d.innerHTML = `<div class="grid2">
+      <label>Titre de la conversation<input class="cTitle" value="${esc(c.title)}"></label>
+      <label>Rang<input class="cRang" type="number" min="1" max="3" value="${esc(c.rang || n)}"></label>
+    </div>
+    <label>Ce qui s’est passé, et pourquoi ça m’a marquée<textarea class="cDesc">${esc(c.desc)}</textarea></label>
+    <div class="feel">${FEELS.map(f => `<label><input type="checkbox" value="${f}" ${c.feel.includes(f) ? 'checked' : ''}> ${f}</label>`).join('')}</div>
+    <div class="row"><button class="ghost danger">Retirer cette conversation</button></div>`;
+  d.querySelector('button').onclick = () => d.remove();
+  $('convs').appendChild(d);
+}
+$('btnAddTask').onclick = () => taskRow();
+$('btnAddConv').onclick = () => { if ($('convs').children.length < 3) convRow(); };
+
+function totals(){
+  const t = [...document.querySelectorAll('.tPct')].reduce((a, i) => a + (+i.value || 0), 0);
+  $('tasksTotal').textContent = 'Total : ' + t + ' %' + (t === 100 ? ' ✓' : ' (doit faire 100 %)');
+  $('tasksTotal').style.color = t === 100 ? 'var(--ok)' : 'var(--warn)';
+  const c = +$('pC').value, l = +$('pL').value, e = +$('pE').value;
+  $('vC').textContent = c + ' %'; $('vL').textContent = l + ' %'; $('vE').textContent = e + ' %';
+  $('fBar').innerHTML = `<i style="width:${c}%;background:var(--c1)"></i><i style="width:${l}%;background:var(--c2)"></i><i style="width:${e}%;background:var(--c3)"></i>`;
+  $('partsMsg').textContent = (c + l + e === 100) ? 'Total : 100 % ✓' : 'Total : ' + (c + l + e) + ' % (doit faire 100 %)';
+  $('partsMsg').style.color = (c + l + e === 100) ? 'var(--ok)' : 'var(--warn)';
+}
+['pC','pL','pE'].forEach(id => $(id).oninput = totals);
+
+async function openForm(id){
+  const m = $('formMsg'); show(m, '');
+  $('formCard').hidden = false; $('tasks').innerHTML = ''; $('convs').innerHTML = '';
+  S.editing = { id:id || null, taskIds:[], convIds:[] };
+  $('formTitle').textContent = id ? 'Session #' + id : 'Nouvelle session';
+  $('btnDelete').hidden = !id;
+  if (!id){
+    ['fTitle','fLlm','fImpr','fPseudo','fMetier'].forEach(k => $(k).value = '');
+    $('fDate').value = new Date().toISOString().slice(0,10); $('fFreq').value = ''; $('fDuree').value = 300;
+    $('pC').value = 60; $('pL').value = 30; $('pE').value = 10;
+    partOptions(null); taskRow(); convRow(); convRow(); totals();
+  } else {
+    show(m, 'Chargement de la session…', 'info');
+    try{
+      const it = await api('items/' + id);
+      $('fTitle').value = val(it,'dcterms:title'); $('fDate').value = val(it,'dcterms:date');
+      $('fLlm').value = val(it,'artinq:llmPrincipal'); $('fFreq').value = val(it,'artinq:frequence');
+      $('fDuree').value = val(it,'artinq:dureeMinuteur') || 300; $('fImpr').value = val(it,'artinq:impression');
+      $('pC').value = val(it,'artinq:partEchangesCourts') || 0; $('pL').value = val(it,'artinq:partConversationsLongues') || 0; $('pE').value = val(it,'artinq:partDialoguesEtendus') || 0;
+      partOptions(refs(it,'artinq:aPourParticipant')[0] || null);
+      S.editing.taskIds = refs(it,'artinq:aPourTache'); S.editing.convIds = refs(it,'artinq:aPourConversationMarquante');
+      const [tasks, convs] = await Promise.all([
+        Promise.all(S.editing.taskIds.map(t => api('items/' + t))),
+        Promise.all(S.editing.convIds.map(c => api('items/' + c)))
+      ]);
+      tasks.forEach(t => taskRow({ id:t['o:id'], name:val(t,'dcterms:title'), pct:+val(t,'artinq:pourcentage') || 0 }));
+      convs.sort((a,b) => (+val(a,'artinq:rang')||9) - (+val(b,'artinq:rang')||9))
+           .forEach(c => convRow({ id:c['o:id'], title:val(c,'dcterms:title'), rang:val(c,'artinq:rang'), desc:val(c,'dcterms:description'), feel:vals(c,'artinq:ressenti') }));
+      if (!tasks.length) taskRow();
+      totals(); show(m, '');
+    }catch(e){ show(m, e.message, 'err'); }
+  }
+  document.querySelectorAll('#formCard input, #formCard select, #formCard textarea, #formCard .sub button, #btnSave, #btnDelete')
+    .forEach(el => el.disabled = !canWrite());
+  $('formCard').scrollIntoView({ behavior:'smooth' });
+}
+$('btnNew').onclick = () => openForm(null);
+$('btnCancel').onclick = () => { $('formCard').hidden = true; };
+
+/* ---------- CREATE / UPDATE ---------- */
+$('btnSave').onclick = async () => {
+  const m = $('formMsg');
+  const title = $('fTitle').value.trim();
+  const tasks = [...$('tasks').children].map(d => ({ id:+d.dataset.id || null, name:d.querySelector('.tName').value.trim(), pct:+d.querySelector('.tPct').value || 0 })).filter(t => t.name);
+  const convs = [...$('convs').children].map(d => ({ id:+d.dataset.id || null, title:d.querySelector('.cTitle').value.trim(), rang:d.querySelector('.cRang').value,
+    desc:d.querySelector('.cDesc').value.trim(), feel:[...d.querySelectorAll('.feel input:checked')].map(i => i.value) })).filter(c => c.title || c.desc);
+  const sumT = tasks.reduce((a,t) => a + t.pct, 0), sumP = +$('pC').value + +$('pL').value + +$('pE').value;
+  if (!title) return show(m, 'Donne un titre à la session.', 'err');
+  if (tasks.length && sumT !== 100) return show(m, 'Les pourcentages des tâches doivent faire 100 % (actuellement ' + sumT + ' %).', 'err');
+  if (sumP !== 100) return show(m, 'Les trois types de conversations doivent faire 100 % (actuellement ' + sumP + ' %).', 'err');
+  if ($('fPart').value === 'new' && !$('fPseudo').value.trim()) return show(m, 'Donne un pseudo au nouveau participant.', 'err');
+
+  $('btnSave').disabled = true; show(m, 'Enregistrement dans Omeka S…', 'info');
+  try{
+    let partId = $('fPart').value;
+    if (partId === 'new'){
+      const p = await saveItem(null, body('Participant', { 'dcterms:title':lit('dcterms:title', $('fPseudo').value.trim()), 'artinq:metier':lit('artinq:metier', $('fMetier').value.trim()) }));
+      partId = p['o:id'];
+    }
+    const taskIds = [];
+    for (const t of tasks){
+      const r = await saveItem(t.id, body('TacheDeleguee', { 'dcterms:title':lit('dcterms:title', t.name), 'artinq:pourcentage':lit('artinq:pourcentage', t.pct) }));
+      taskIds.push(r['o:id']);
+    }
+    const convIds = [];
+    for (const c of convs){
+      const r = await saveItem(c.id, body('ConversationMarquante', { 'dcterms:title':lit('dcterms:title', c.title || 'Sans titre'), 'artinq:rang':lit('artinq:rang', c.rang),
+        'dcterms:description':lit('dcterms:description', c.desc), 'artinq:ressenti':lits('artinq:ressenti', c.feel) }));
+      convIds.push(r['o:id']);
+    }
+    const sess = await saveItem(S.editing.id, body('SessionImpressions', {
+      'dcterms:title':lit('dcterms:title', title), 'dcterms:date':lit('dcterms:date', $('fDate').value),
+      'artinq:aPourParticipant':res('artinq:aPourParticipant', [partId]), 'artinq:llmPrincipal':lit('artinq:llmPrincipal', $('fLlm').value.trim()),
+      'artinq:frequence':lit('artinq:frequence', $('fFreq').value), 'artinq:dureeMinuteur':lit('artinq:dureeMinuteur', $('fDuree').value),
+      'artinq:aPourTache':res('artinq:aPourTache', taskIds),
+      'artinq:partEchangesCourts':lit('artinq:partEchangesCourts', $('pC').value), 'artinq:partConversationsLongues':lit('artinq:partConversationsLongues', $('pL').value),
+      'artinq:partDialoguesEtendus':lit('artinq:partDialoguesEtendus', $('pE').value),
+      'artinq:aPourConversationMarquante':res('artinq:aPourConversationMarquante', convIds), 'artinq:impression':lit('artinq:impression', $('fImpr').value.trim())
+    }));
+    /* les tâches et conversations retirées du formulaire sont supprimées */
+    const gone = [...S.editing.taskIds.filter(i => !taskIds.includes(i)), ...S.editing.convIds.filter(i => !convIds.includes(i))];
+    for (const i of gone) await api('items/' + i, { method:'DELETE' });
+    await loadList();
+    S.editing = null; await openForm(sess['o:id']);
+    show(m, 'Session #' + sess['o:id'] + ' enregistrée dans Omeka S.', 'ok');
+  }catch(e){ show(m, e.message, 'err'); }
+  finally{ $('btnSave').disabled = !canWrite(); }
+};
+
+/* ---------- DELETE ---------- */
+async function removeSession(id){
+  if (!canWrite()) return;
+  if (!confirm('Supprimer la session #' + id + ' avec ses tâches et ses conversations ? Le participant est conservé.')) return;
+  const m = $('listMsg'); show(m, 'Suppression…', 'info');
+  try{
+    const it = await api('items/' + id);
+    for (const c of [...refs(it,'artinq:aPourTache'), ...refs(it,'artinq:aPourConversationMarquante')]) await api('items/' + c, { method:'DELETE' });
+    await api('items/' + id, { method:'DELETE' });
+    if (S.editing && S.editing.id === id) $('formCard').hidden = true;
+    await loadList(); show(m, 'Session #' + id + ' supprimée.', 'ok');
+  }catch(e){ show(m, e.message, 'err'); }
+}
+$('btnDelete').onclick = () => S.editing && S.editing.id && removeSession(S.editing.id);
+
+/* ---------- démarrage : reconnexion automatique ---------- */
+const savedApi = store.get('api'); if (savedApi) $('apiUrl').value = savedApi;
+const i0 = store.get('ident'), c0 = store.get('cred');
+if (i0 && c0){ $('keyId').value = i0; let persisted = false; try{ persisted = Boolean(localStorage.getItem('ident')); }catch(e){} connect(i0, c0, persisted); }
+setWho();
+})();
+</script>
+</body>
+</html>
