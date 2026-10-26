@@ -103,8 +103,8 @@ code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);paddi
   <div data-panel="local" class="provider">
     <p class="muted">Dans Omeka S : <b>Utilisateurs → ton compte → Modifier → onglet « Clés d’API » → Nouvelle clé</b>. Copie les deux valeurs ici.</p>
     <div class="grid2">
-      <label>key_identity<input id="keyId" autocomplete="username" spellcheck="false"></label>
-      <label>key_credential<input id="keyCred" type="password" autocomplete="current-password" spellcheck="false"></label>
+      <label>key_identity<input id="keyId" name="omk_key_identity" autocomplete="off" spellcheck="false" placeholder="ex. yWknC9…"></label>
+      <label>key_credential<input id="keyCred" name="omk_key_credential" type="text" autocomplete="off" spellcheck="false" style="-webkit-text-security:disc" placeholder="code secret de la clé"></label>
     </div>
     <label style="flex-direction:row;align-items:center;gap:8px;color:var(--ink)"><input type="checkbox" id="remember"> Rester connectée sur cet ordinateur</label>
     <div class="row">
