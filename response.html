@@ -213,7 +213,7 @@ code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);paddi
   </div>
 </section>
 
-<footer class="muted">Exercice Ex3a « Rough Impressions » · vocabulaire <code>artinq</code> · d’après <i>Artificial Inquiries</i> (Alcaras et al., 2025). Dépôt : ArtificialInquiries_3a.</footer>
+<footer class="muted">Exercice Ex3a « Rough Impressions » · vocabulaire <code>artinq</code> · d’après <i>Artificial Inquiries</i> (Alcaras et al., 2025). Dépôt : ArtificialInquiries_3.a.</footer>
 </div>
 
 <script>
@@ -231,16 +231,35 @@ const store = { get(k){ try{ return sessionStorage.getItem(k) ?? localStorage.ge
 function show(el, text, kind){ el.hidden = !text; el.textContent = text || ''; el.className = 'msg ' + (kind||'info'); }
 const canWrite = () => Boolean(S.ident && S.cred);
 
+/* ---------- Diagnostic quand l'API ne répond pas ---------- */
+async function diagnose(){
+  if (location.protocol === 'file:')
+    return "La page est ouverte comme fichier (adresse « C:/… »). Ouvre-la par une adresse web : http://localhost/response.html ou la page GitHub Pages.";
+  const base = S.api.replace(/\/+$/,'') + '/items?per_page=1';
+  let joignable = false;
+  try{ await fetch(base, { mode: 'no-cors' }); joignable = true; }
+  catch(e){ try{ await fetch(base, { mode: 'no-cors', targetAddressSpace: 'loopback' }); joignable = true; }catch(e2){} }
+  if (joignable)
+    return "Omeka répond, mais il n’autorise pas cette page (CORS). Vérifie que les lignes « Header always set Access-Control-Allow-Origin » sont tout en haut du fichier omekas/.htaccess, puis redémarre Apache (Stop puis Start dans XAMPP).";
+  if (location.protocol === 'https:')
+    return "Chrome bloque l’accès de cette page en ligne à ton ordinateur. Clique sur l’icône à gauche de l’adresse → Paramètres du site → « Accès au réseau local » → Autoriser, puis actualise la page. Vérifie aussi qu’Apache et MySQL sont allumés dans XAMPP.";
+  return "Impossible de joindre l’API. Vérifie qu’Apache et MySQL sont allumés dans XAMPP et que l’adresse de l’API est juste (http://localhost/omekas/api).";
+}
+
 /* ---------- API Omeka S ---------- */
 async function api(path, { method='GET', params={}, body } = {}){
   const p = new URLSearchParams(params);
   if (S.ident && S.cred){ p.set('key_identity', S.ident); p.set('key_credential', S.cred); }
   const url = S.api.replace(/\/+$/,'') + '/' + path + (p.toString() ? '?' + p : '');
+  const opts = { method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined };
   let r;
   try{
-    r = await fetch(url, { method, headers: body ? {'Content-Type':'application/json'} : {}, body: body ? JSON.stringify(body) : undefined });
-  }catch(e){
-    throw new Error("Impossible de joindre l’API. Vérifie qu’Apache et MySQL sont allumés, que l’adresse est juste, et que l’API autorise cette page (CORS, voir le README).");
+    r = await fetch(url, opts);
+  }catch(e1){
+    // Chrome (accès au réseau local) : on précise que l'API est sur cet ordinateur
+    const local = /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/i.test(S.api);
+    if (local){ try{ r = await fetch(url, { ...opts, targetAddressSpace: 'loopback' }); }catch(e2){} }
+    if (!r) throw new Error(await diagnose());
   }
   let data = null; try{ data = await r.json(); }catch(e){}
   if (!r.ok){
