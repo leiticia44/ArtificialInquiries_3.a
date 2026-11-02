@@ -91,10 +91,14 @@ code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);paddi
 <section class="card" id="authCard" aria-labelledby="authTitle">
   <h2 id="authTitle">Connexion</h2>
   <label>Adresse de l’API Omeka S
-    <input id="apiUrl" type="url" value="http://localhost/omekas/api" spellcheck="false">
+    <input id="apiUrl" type="url" value="https://humanum-p8.fr/omk_artificialinquiries/api" spellcheck="false" list="apiList">
+    <datalist id="apiList">
+      <option value="https://humanum-p8.fr/omk_artificialinquiries/api">Base commune du cours</option>
+      <option value="http://localhost/omekas/api">Omeka S local (XAMPP)</option>
+    </datalist>
   </label>
   <div class="tabs" role="tablist">
-    <button role="tab" data-tab="local" aria-selected="true">Omeka (local)</button>
+    <button role="tab" data-tab="local" aria-selected="true">Omeka (clé API)</button>
     <button role="tab" data-tab="google" aria-selected="false">Google</button>
     <button role="tab" data-tab="github" aria-selected="false">GitHub</button>
     <button role="tab" data-tab="cas" aria-selected="false">CAS (université)</button>
@@ -114,7 +118,7 @@ code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);paddi
   </div>
 
   <div data-panel="google" class="provider" hidden>
-    <p class="muted">Google vérifie <b>qui tu es</b>. Pour enregistrer dans Omeka, il faut aussi la clé API Omeka (onglet « Omeka (local) »).</p>
+    <p class="muted">Google vérifie <b>qui tu es</b>. Pour enregistrer dans Omeka, il faut aussi la clé API Omeka (onglet « Omeka (clé API) »).</p>
     <label>Identifiant client Google (OAuth Client ID)
       <input id="gClientId" placeholder="xxxxxxxx.apps.googleusercontent.com" spellcheck="false">
     </label>
@@ -176,7 +180,7 @@ code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);paddi
   </div>
   <div class="grid2" id="newPart" hidden>
     <label>Pseudo du nouveau participant *<input id="fPseudo"></label>
-    <label>Métier<input id="fMetier"></label>
+    <label>Profession<input id="fMetier"></label>
   </div>
 
   <div class="sub">
@@ -209,11 +213,11 @@ code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);paddi
   <div id="formMsg" class="msg" hidden role="status"></div>
   <div class="row">
     <button class="primary" id="btnSave">Enregistrer dans Omeka S</button>
-    <button class="danger" id="btnDelete" hidden>Supprimer cette session</button>
+    <button class="danger" id="btnDelete" hidden>Supprimer cette passation</button>
   </div>
 </section>
 
-<footer class="muted">Exercice Ex3a « Rough Impressions » · vocabulaire <code>artinq</code> · d’après <i>Artificial Inquiries</i> (Alcaras et al., 2025). Dépôt : ArtificialInquiries_3.a.</footer>
+<footer class="muted">Exercice 3.a « Rough Impressions » · vocabulaire commun <code>artinq</code> · modèles « Ex3a – … » · d’après <i>Artificial Inquiries</i> (Alcaras et al., 2025). Dépôt : ArtificialInquiries_3.a.</footer>
 </div>
 
 <script>
@@ -221,8 +225,11 @@ code{font-family:var(--mono);font-size:.85em;background:var(--accent-soft);paddi
 'use strict';
 /* ---------- état ---------- */
 const FEELS = ['enthousiasme','frustration','amusement','inquiétude','surprise','doute éthique'];
-const CLASSES = ['Participant','SessionImpressions','TacheDeleguee','ConversationMarquante'];
-const S = { api:'', ident:'', cred:'', ids:{cls:{},prop:{},tpl:{}}, participants:[], sessions:[], editing:null };
+/* vocabulaire commun artinq (base humanum-p8.fr/omk_artificialinquiries) */
+const CLASSES = ['Participant','Passation','Tache','ConversationMarquante','Emotion','LLM','Exercice'];
+const TPL = { Participant:'Ex3a - Participant', Passation:'Ex3a - Passation', Tache:'Ex3a - Tâche', ConversationMarquante:'Ex3a - Conversation marquante' };
+const EXERCICE = /\b3\.?a\b/i;   // item « Exercice 3.a » de la classe artinq:Exercice
+const S = { api:'', ident:'', cred:'', ids:{cls:{},prop:{},tpl:{},exercice:null}, participants:[], sessions:[], editing:null };
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const store = { get(k){ try{ return sessionStorage.getItem(k) ?? localStorage.getItem(k); }catch(e){ return null; } },
@@ -240,10 +247,12 @@ async function diagnose(){
   try{ await fetch(base, { mode: 'no-cors' }); joignable = true; }
   catch(e){ try{ await fetch(base, { mode: 'no-cors', targetAddressSpace: 'loopback' }); joignable = true; }catch(e2){} }
   if (joignable)
-    return "Omeka répond, mais il n’autorise pas cette page (CORS). Vérifie que les lignes « Header always set Access-Control-Allow-Origin » sont tout en haut du fichier omekas/.htaccess, puis redémarre Apache (Stop puis Start dans XAMPP).";
-  if (location.protocol === 'https:')
+    return /localhost|127\.0\.0\.1/.test(S.api)
+      ? "Omeka répond, mais il n’autorise pas cette page (CORS). Ajoute les lignes header('Access-Control-Allow-Origin: *') en haut de omekas/index.php (voir le README)."
+      : "Le serveur Omeka répond, mais il n’autorise pas cette page (CORS) : il faut que l’administrateur de la base l’autorise.";
+  if (location.protocol === 'https:' && /localhost|127\.0\.0\.1/.test(S.api))
     return "Chrome bloque l’accès de cette page en ligne à ton ordinateur. Clique sur l’icône à gauche de l’adresse → Paramètres du site → « Accès au réseau local » → Autoriser, puis actualise la page. Vérifie aussi qu’Apache et MySQL sont allumés dans XAMPP.";
-  return "Impossible de joindre l’API. Vérifie qu’Apache et MySQL sont allumés dans XAMPP et que l’adresse de l’API est juste (http://localhost/omekas/api).";
+  return "Impossible de joindre l’API. Vérifie l’adresse de l’API (base commune : https://humanum-p8.fr/omk_artificialinquiries/api) ou, en local, qu’Apache et MySQL sont allumés dans XAMPP.";
 }
 
 /* ---------- API Omeka S ---------- */
@@ -270,24 +279,42 @@ async function api(path, { method='GET', params={}, body } = {}){
   return data;
 }
 
-/* lit les identifiants des classes, propriétés et modèles de ressource */
+/* lit les identifiants des classes, propriétés et modèles de ressource du vocabulaire commun */
 async function loadModel(){
-  const classes = await api('resource_classes', { params:{ vocabulary_prefix:'artinq', per_page:50 } });
+  S.ids = { cls:{}, prop:{}, tpl:{}, exercice:null };
+  const classes = await api('resource_classes', { params:{ vocabulary_prefix:'artinq', per_page:500 } });
   classes.forEach(c => S.ids.cls[c['o:local_name']] = c['o:id']);
   const missing = CLASSES.filter(c => !S.ids.cls[c]);
-  if (missing.length) throw new Error('Vocabulaire artinq incomplet dans Omeka S (classes manquantes : ' + missing.join(', ') + '). Importe artificial_inquiries.ttl.');
-  const props = await api('properties', { params:{ vocabulary_prefix:'artinq', per_page:100 } });
+  if (missing.length) throw new Error('Cette base n’a pas le vocabulaire commun artinq (classes manquantes : ' + missing.join(', ') + '). Utilise la base commune ou importe le vocabulaire commun.');
+  const props = await api('properties', { params:{ vocabulary_prefix:'artinq', per_page:500 } });
   props.forEach(p => S.ids.prop['artinq:' + p['o:local_name']] = p['o:id']);
-  for (const term of ['dcterms:title','dcterms:date','dcterms:description']){
+  for (const term of ['dcterms:title']){
     const r = await api('properties', { params:{ term } });
     if (r[0]) S.ids.prop[term] = r[0]['o:id'];
   }
-  const tpls = await api('resource_templates', { params:{ per_page:100 } });
-  tpls.forEach(t => {
-    const cid = t['o:resource_class'] && t['o:resource_class']['o:id'];
-    const name = Object.keys(S.ids.cls).find(k => S.ids.cls[k] === cid);
-    if (name && !S.ids.tpl[name]) S.ids.tpl[name] = t['o:id'];
-  });
+  const tpls = await api('resource_templates', { params:{ per_page:500 } });
+  const norm = x => String(x || '').replace(/[–—]/g, '-').replace(/\s+/g, ' ').trim().toLowerCase();
+  for (const [cls, label] of Object.entries(TPL)){
+    const t = tpls.find(t => norm(t['o:label']) === norm(label));
+    if (t) S.ids.tpl[cls] = t['o:id'];
+  }
+  for (const cls of ['Emotion','LLM']){   // modèles communs déjà présents dans la base
+    const t = tpls.find(t => t['o:resource_class'] && t['o:resource_class']['o:id'] === S.ids.cls[cls]);
+    if (t) S.ids.tpl[cls] = t['o:id'];
+  }
+  const ex = await api('items', { params:{ resource_class_id:S.ids.cls.Exercice, per_page:200 } });
+  const e = ex.find(i => EXERCICE.test(i['o:title'] || ''));
+  if (e) S.ids.exercice = e['o:id'];
+}
+
+/* retrouve un contenu par son titre (Émotion, LLM) ou le crée */
+async function findOrCreate(cls, title){
+  title = String(title || '').trim(); if (!title) return null;
+  const list = await api('items', { params:{ resource_class_id:S.ids.cls[cls], per_page:500 } });
+  const hit = list.find(i => (i['o:title'] || '').trim().toLowerCase() === title.toLowerCase());
+  if (hit) return hit['o:id'];
+  const r = await saveItem(null, body(cls, { 'dcterms:title':lit('dcterms:title', title) }));
+  return r['o:id'];
 }
 
 /* ---------- conversion valeurs Omeka <-> JS ---------- */
@@ -377,29 +404,34 @@ $('btnGoogleInit').onclick = () => {
 /* ---------- READ : liste ---------- */
 async function loadList(){
   const box = $('sessions'), m = $('listMsg');
-  if (!S.ids.cls.SessionImpressions){ box.innerHTML = ''; return; }
+  if (!S.ids.cls.Passation){ box.innerHTML = ''; return; }
   show(m, 'Chargement…', 'info');
   try{
-    const [sessions, parts] = await Promise.all([
-      api('items', { params:{ resource_class_id:S.ids.cls.SessionImpressions, per_page:100, sort_by:'created', sort_order:'desc' } }),
-      api('items', { params:{ resource_class_id:S.ids.cls.Participant, per_page:100 } })
+    const q = { resource_class_id:S.ids.cls.Passation, per_page:200, sort_by:'created', sort_order:'desc' };
+    if (S.ids.tpl.Passation) q.resource_template_id = S.ids.tpl.Passation;
+    const [all, parts] = await Promise.all([
+      api('items', { params:q }),
+      api('items', { params:{ resource_class_id:S.ids.cls.Participant, per_page:500 } })
     ]);
+    /* seulement les passations de l'exercice 3.a */
+    const sessions = all.filter(it => S.ids.tpl.Passation || !S.ids.exercice || refs(it,'artinq:porteSur').includes(S.ids.exercice));
     S.sessions = sessions; S.participants = parts;
     show(m, '');
-    if (!sessions.length){ box.innerHTML = '<p class="empty">Aucune session pour l’instant. Clique sur « Nouvelle session ».</p>'; return; }
+    if (!sessions.length){ box.innerHTML = '<p class="empty">Aucune passation de l’exercice 3.a pour l’instant. Clique sur « Nouvelle session ».</p>'; return; }
     box.innerHTML = sessions.map(it => {
-      const pid = refs(it, 'artinq:aPourParticipant')[0];
+      const pid = refs(it, 'artinq:realiseePar')[0];
       const p = parts.find(x => x['o:id'] === pid);
+      const pName = p ? p['o:title'] : ((it['artinq:realiseePar'] || [])[0] || {}).display_title;
       const c = +val(it,'artinq:partEchangesCourts') || 0, l = +val(it,'artinq:partConversationsLongues') || 0, e = +val(it,'artinq:partDialoguesEtendus') || 0;
       return `<article class="s-card">
-        <span class="eyebrow">#${it['o:id']} · ${esc(val(it,'dcterms:date') || 'sans date')}</span>
+        <span class="eyebrow">#${it['o:id']} · ${esc(val(it,'artinq:date') || 'sans date')}</span>
         <h3>${esc(it['o:title'] || val(it,'dcterms:title') || 'Sans titre')}</h3>
         <dl class="kv">
-          <dt>Participant</dt><dd>${esc(p ? p['o:title'] : '—')}</dd>
-          <dt>LLM</dt><dd>${esc(val(it,'artinq:llmPrincipal') || '—')}</dd>
+          <dt>Participant</dt><dd>${esc(pName || '—')}</dd>
+          <dt>LLM</dt><dd>${esc(val(it,'artinq:utiliseLLM') || '—')}</dd>
           <dt>Fréquence</dt><dd>${esc(val(it,'artinq:frequence') || '—')}</dd>
           <dt>Tâches</dt><dd>${refs(it,'artinq:aPourTache').length}</dd>
-          <dt>Conversations</dt><dd>${refs(it,'artinq:aPourConversationMarquante').length}</dd>
+          <dt>Conversations</dt><dd>${refs(it,'artinq:aPourConversation').length}</dd>
         </dl>
         <div class="bar" title="courts ${c} % · longs ${l} % · étendus ${e} %"><i style="width:${c}%;background:var(--c1)"></i><i style="width:${l}%;background:var(--c2)"></i><i style="width:${e}%;background:var(--c3)"></i></div>
         <div class="row">
@@ -478,19 +510,21 @@ async function openForm(id){
     show(m, 'Chargement de la session…', 'info');
     try{
       const it = await api('items/' + id);
-      $('fTitle').value = val(it,'dcterms:title'); $('fDate').value = val(it,'dcterms:date');
-      $('fLlm').value = val(it,'artinq:llmPrincipal'); $('fFreq').value = val(it,'artinq:frequence');
-      $('fDuree').value = val(it,'artinq:dureeMinuteur') || 300; $('fImpr').value = val(it,'artinq:impression');
+      $('fTitle').value = val(it,'dcterms:title'); $('fDate').value = val(it,'artinq:date');
+      $('fLlm').value = val(it,'artinq:utiliseLLM'); $('fFreq').value = val(it,'artinq:frequence');
+      $('fDuree').value = val(it,'artinq:dureeMinuteur') || 300; $('fImpr').value = val(it,'artinq:texte');
       $('pC').value = val(it,'artinq:partEchangesCourts') || 0; $('pL').value = val(it,'artinq:partConversationsLongues') || 0; $('pE').value = val(it,'artinq:partDialoguesEtendus') || 0;
-      partOptions(refs(it,'artinq:aPourParticipant')[0] || null);
-      S.editing.taskIds = refs(it,'artinq:aPourTache'); S.editing.convIds = refs(it,'artinq:aPourConversationMarquante');
+      partOptions(refs(it,'artinq:realiseePar')[0] || null);
+      S.editing.taskIds = refs(it,'artinq:aPourTache'); S.editing.convIds = refs(it,'artinq:aPourConversation');
       const [tasks, convs] = await Promise.all([
         Promise.all(S.editing.taskIds.map(t => api('items/' + t))),
         Promise.all(S.editing.convIds.map(c => api('items/' + c)))
       ]);
-      tasks.forEach(t => taskRow({ id:t['o:id'], name:val(t,'dcterms:title'), pct:+val(t,'artinq:pourcentage') || 0 }));
-      convs.sort((a,b) => (+val(a,'artinq:rang')||9) - (+val(b,'artinq:rang')||9))
-           .forEach(c => convRow({ id:c['o:id'], title:val(c,'dcterms:title'), rang:val(c,'artinq:rang'), desc:val(c,'dcterms:description'), feel:vals(c,'artinq:ressenti') }));
+      tasks.sort((a,b) => (+val(a,'artinq:ordre')||99) - (+val(b,'artinq:ordre')||99))
+           .forEach(t => taskRow({ id:t['o:id'], name:val(t,'dcterms:title'), pct:+val(t,'artinq:pourcentage') || 0 }));
+      convs.sort((a,b) => (+val(a,'artinq:ordre')||9) - (+val(b,'artinq:ordre')||9))
+           .forEach(c => convRow({ id:c['o:id'], title:val(c,'dcterms:title'), rang:val(c,'artinq:ordre'), desc:val(c,'artinq:pourquoiMarquante'),
+             feel:(c['artinq:aPourEmotion'] || []).map(x => (x.display_title || x['@value'] || '').toLowerCase()) }));
       if (!tasks.length) taskRow();
       totals(); show(m, '');
     }catch(e){ show(m, e.message, 'err'); }
@@ -519,35 +553,39 @@ $('btnSave').onclick = async () => {
   try{
     let partId = $('fPart').value;
     if (partId === 'new'){
-      const p = await saveItem(null, body('Participant', { 'dcterms:title':lit('dcterms:title', $('fPseudo').value.trim()), 'artinq:metier':lit('artinq:metier', $('fMetier').value.trim()) }));
+      const p = await saveItem(null, body('Participant', { 'dcterms:title':lit('dcterms:title', $('fPseudo').value.trim()), 'artinq:profession':lit('artinq:profession', $('fMetier').value.trim()) }));
       partId = p['o:id'];
     }
     const taskIds = [];
-    for (const t of tasks){
-      const r = await saveItem(t.id, body('TacheDeleguee', { 'dcterms:title':lit('dcterms:title', t.name), 'artinq:pourcentage':lit('artinq:pourcentage', t.pct) }));
+    for (const [k, t] of tasks.entries()){
+      const r = await saveItem(t.id, body('Tache', { 'dcterms:title':lit('dcterms:title', t.name), 'artinq:pourcentage':lit('artinq:pourcentage', t.pct), 'artinq:ordre':lit('artinq:ordre', k + 1) }));
       taskIds.push(r['o:id']);
     }
     const convIds = [];
     for (const c of convs){
-      const r = await saveItem(c.id, body('ConversationMarquante', { 'dcterms:title':lit('dcterms:title', c.title || 'Sans titre'), 'artinq:rang':lit('artinq:rang', c.rang),
-        'dcterms:description':lit('dcterms:description', c.desc), 'artinq:ressenti':lits('artinq:ressenti', c.feel) }));
+      const emo = [];
+      for (const f of c.feel) emo.push(await findOrCreate('Emotion', f));
+      const r = await saveItem(c.id, body('ConversationMarquante', { 'dcterms:title':lit('dcterms:title', c.title || 'Sans titre'), 'artinq:ordre':lit('artinq:ordre', c.rang),
+        'artinq:pourquoiMarquante':lit('artinq:pourquoiMarquante', c.desc), 'artinq:aPourEmotion':res('artinq:aPourEmotion', emo) }));
       convIds.push(r['o:id']);
     }
-    const sess = await saveItem(S.editing.id, body('SessionImpressions', {
-      'dcterms:title':lit('dcterms:title', title), 'dcterms:date':lit('dcterms:date', $('fDate').value),
-      'artinq:aPourParticipant':res('artinq:aPourParticipant', [partId]), 'artinq:llmPrincipal':lit('artinq:llmPrincipal', $('fLlm').value.trim()),
+    const llmId = await findOrCreate('LLM', $('fLlm').value);
+    const sess = await saveItem(S.editing.id, body('Passation', {
+      'dcterms:title':lit('dcterms:title', title), 'artinq:date':lit('artinq:date', $('fDate').value),
+      'artinq:porteSur':res('artinq:porteSur', [S.ids.exercice]),
+      'artinq:realiseePar':res('artinq:realiseePar', [partId]), 'artinq:utiliseLLM':res('artinq:utiliseLLM', [llmId]),
       'artinq:frequence':lit('artinq:frequence', $('fFreq').value), 'artinq:dureeMinuteur':lit('artinq:dureeMinuteur', $('fDuree').value),
       'artinq:aPourTache':res('artinq:aPourTache', taskIds),
       'artinq:partEchangesCourts':lit('artinq:partEchangesCourts', $('pC').value), 'artinq:partConversationsLongues':lit('artinq:partConversationsLongues', $('pL').value),
       'artinq:partDialoguesEtendus':lit('artinq:partDialoguesEtendus', $('pE').value),
-      'artinq:aPourConversationMarquante':res('artinq:aPourConversationMarquante', convIds), 'artinq:impression':lit('artinq:impression', $('fImpr').value.trim())
+      'artinq:aPourConversation':res('artinq:aPourConversation', convIds), 'artinq:texte':lit('artinq:texte', $('fImpr').value.trim())
     }));
     /* les tâches et conversations retirées du formulaire sont supprimées */
     const gone = [...S.editing.taskIds.filter(i => !taskIds.includes(i)), ...S.editing.convIds.filter(i => !convIds.includes(i))];
     for (const i of gone) await api('items/' + i, { method:'DELETE' });
     await loadList();
     S.editing = null; await openForm(sess['o:id']);
-    show(m, 'Session #' + sess['o:id'] + ' enregistrée dans Omeka S.', 'ok');
+    show(m, 'Passation #' + sess['o:id'] + ' enregistrée dans Omeka S.', 'ok');
   }catch(e){ show(m, e.message, 'err'); }
   finally{ $('btnSave').disabled = !canWrite(); }
 };
@@ -555,14 +593,14 @@ $('btnSave').onclick = async () => {
 /* ---------- DELETE ---------- */
 async function removeSession(id){
   if (!canWrite()) return;
-  if (!confirm('Supprimer la session #' + id + ' avec ses tâches et ses conversations ? Le participant est conservé.')) return;
+  if (!confirm('Supprimer la passation #' + id + ' avec ses tâches et ses conversations ? Le participant, le LLM et les émotions sont conservés.')) return;
   const m = $('listMsg'); show(m, 'Suppression…', 'info');
   try{
     const it = await api('items/' + id);
-    for (const c of [...refs(it,'artinq:aPourTache'), ...refs(it,'artinq:aPourConversationMarquante')]) await api('items/' + c, { method:'DELETE' });
+    for (const c of [...refs(it,'artinq:aPourTache'), ...refs(it,'artinq:aPourConversation')]) await api('items/' + c, { method:'DELETE' });
     await api('items/' + id, { method:'DELETE' });
     if (S.editing && S.editing.id === id) $('formCard').hidden = true;
-    await loadList(); show(m, 'Session #' + id + ' supprimée.', 'ok');
+    await loadList(); show(m, 'Passation #' + id + ' supprimée.', 'ok');
   }catch(e){ show(m, e.message, 'err'); }
 }
 $('btnDelete').onclick = () => S.editing && S.editing.id && removeSession(S.editing.id);

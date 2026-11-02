@@ -1,4 +1,4 @@
-# ArtificialInquiries_3a — Impressions à chaud
+# ArtificialInquiries_3.a — Impressions à chaud
 
 Outil numérique pour l'exercice **Ex3a « Rough Impressions »** du vademecum *Artificial Inquiries*.
 
@@ -68,67 +68,77 @@ Pile technique pour l'installation locale : **Apache + PHP + MySQL** (voir la [d
 
 Voir [`diagram_class.md`](diagram_class.md) (diagramme de classes Mermaid).
 
-## 5. Traduction du modèle dans Omeka S
+## 5. Traduction du modèle dans Omeka S (vocabulaire commun)
 
-### Vocabulaire `artinq`
-
-Le fichier [`artificial_inquiries.ttl`](artificial_inquiries.ttl) définit le vocabulaire **Artificial Inquiries** :
+L'exercice utilise le **vocabulaire commun** du cours, déjà installé dans la base commune [humanum-p8.fr/omk_artificialinquiries](https://humanum-p8.fr/omk_artificialinquiries/admin) :
 
 - préfixe : `artinq`
 - espace de noms : `https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#`
 
-| Classe du diagramme | Classe RDF |
+### Correspondance diagramme → vocabulaire commun
+
+| Classe du diagramme | Classe commune |
 |---|---|
 | `Participant` | `artinq:Participant` |
-| `SessionImpressions` | `artinq:SessionImpressions` |
-| `TacheDeleguee` | `artinq:TacheDeleguee` |
+| `SessionImpressions` | `artinq:Passation` (liée à l'item « Exercice 3.a » de `artinq:Exercice`) |
+| `TacheDeleguee` | `artinq:Tache` |
 | `ConversationMarquante` | `artinq:ConversationMarquante` |
+| `Ressenti` | `artinq:Emotion` (un contenu par émotion, réutilisé) |
+| `llmPrincipal` | `artinq:LLM` (un contenu par modèle, réutilisé) |
 
-| Attribut ou relation du diagramme | Propriété |
+| Attribut ou relation du diagramme | Propriété commune |
 |---|---|
-| `Participant.metier` | `artinq:metier` |
-| Participant → Session | `artinq:aPourParticipant` |
-| `dureeMinuteur`, `frequence`, `llmPrincipal` | `artinq:dureeMinuteur`, `artinq:frequence`, `artinq:llmPrincipal` |
-| Session → TacheDeleguee | `artinq:aPourTache` |
-| `TacheDeleguee.pourcentage` | `artinq:pourcentage` |
+| titres | `dcterms:title` |
+| `Participant.metier` | `artinq:profession` |
+| Session → Exercice 3.a | `artinq:porteSur` |
+| Session → Participant | `artinq:realiseePar` |
+| `date` | `artinq:date` |
+| `llmPrincipal` | `artinq:utiliseLLM` → `artinq:LLM` |
+| `frequence`, `dureeMinuteur` | `artinq:frequence`, `artinq:dureeMinuteur` |
 | `StructureConversations` (3 parts) | `artinq:partEchangesCourts`, `artinq:partConversationsLongues`, `artinq:partDialoguesEtendus` |
-| Session → ConversationMarquante | `artinq:aPourConversationMarquante` |
-| `ConversationMarquante.rang`, `ressentis` | `artinq:rang`, `artinq:ressenti` |
-| `Impression.texte` | `artinq:impression` |
-| titres, dates, descriptions | `dcterms:title`, `dcterms:date`, `dcterms:description` |
-| `Croquis` | média (image PNG) attaché à la session |
+| Session → TacheDeleguee | `artinq:aPourTache` |
+| `TacheDeleguee.pourcentage` | `artinq:pourcentage` (+ `artinq:ordre`) |
+| Session → ConversationMarquante | `artinq:aPourConversation` |
+| `ConversationMarquante.rang` | `artinq:ordre` |
+| `ConversationMarquante.description` | `artinq:pourquoiMarquante` |
+| `ConversationMarquante.ressentis` | `artinq:aPourEmotion` → `artinq:Emotion` |
+| `Impression.texte` | `artinq:texte` |
+
+Le fichier `artificial_inquiries.ttl` est mon premier vocabulaire personnel : il est **remplacé** par le vocabulaire commun.
 
 ### Modèles de ressource
 
-Le dossier [`resource-template/`](resource-template/) contient les modèles de ressource exportés d'Omeka S :
+Le dossier [`resource-template/`](resource-template/) contient les modèles de ressource, à importer dans la base commune (Modèles de ressource → Importer) :
 
-| Fichier | Classe |
-|---|---|
-| `Ex3a_Session_impressions.json` | `artinq:SessionImpressions` |
-| `Ex3a_Tache_deleguee.json` | `artinq:TacheDeleguee` |
-| `Ex3a_Conversation_marquante.json` | `artinq:ConversationMarquante` |
-| `Ex3a_Participant.json` | `artinq:Participant` |
+| Fichier | Libellé | Classe |
+|---|---|---|
+| `Ex3a_Passation.json` | Ex3a - Passation | `artinq:Passation` |
+| `Ex3a_Tache.json` | Ex3a - Tâche | `artinq:Tache` |
+| `Ex3a_Conversation_marquante.json` | Ex3a - Conversation marquante | `artinq:ConversationMarquante` |
+| `Ex3a_Participant.json` | Ex3a - Participant | `artinq:Participant` |
+
+Les émotions et les LLM utilisent les modèles communs déjà présents dans la base.
 
 ### Base de données
 
-`omk.sql` est l'export de la base MySQL de l'installation Omeka S locale, avec les contenus de test.
+`omk.sql` est l'export de mon installation Omeka S locale (premiers tests).
 
 ## 6. Interface de gestion (CRUD) : `response.html`
 
 Page HTML-CSS-JavaScript, sans framework, qui gère les réponses de l'exercice directement dans Omeka S.
 
-En ligne (GitHub Pages) : **https://leiticia44.github.io/ArtificialInquiries_3a/response.html**
+En ligne (GitHub Pages) : **https://leiticia44.github.io/ArtificialInquiries_3.a/response.html**
 
 ### Ce que fait la page
 
 | Action | Ce que fait l'interface | Appel à l'API Omeka S |
 |---|---|---|
-| **Create** | Nouvelle session avec participant, tâches (total 100 %), structure des conversations (total 100 %), 2 ou 3 conversations marquantes et impressions | `POST /api/items` (un contenu par tâche, par conversation, puis la session qui les relie) |
-| **Read** | Liste des sessions, puis détail d'une session | `GET /api/items?resource_class_id=…` et `GET /api/items/{id}` |
-| **Update** | Modification d'une session et de ses tâches et conversations | `PUT /api/items/{id}` (les tâches et conversations retirées sont supprimées) |
-| **Delete** | Suppression d'une session, de ses tâches et de ses conversations (le participant est gardé) | `DELETE /api/items/{id}` |
+| **Create** | Nouvelle passation avec participant, LLM, tâches (total 100 %), structure des conversations (total 100 %), 2 ou 3 conversations marquantes (avec émotions) et impressions | `POST /api/items` (un contenu par tâche, par conversation, puis la passation qui les relie) |
+| **Read** | Liste des passations de l'exercice 3.a, puis détail | `GET /api/items?resource_template_id=…` et `GET /api/items/{id}` |
+| **Update** | Modification d'une passation et de ses tâches et conversations | `PUT /api/items/{id}` (les tâches et conversations retirées sont supprimées) |
+| **Delete** | Suppression d'une passation, de ses tâches et de ses conversations (participant, LLM et émotions gardés) | `DELETE /api/items/{id}` |
 
-Au démarrage, la page lit les identifiants du vocabulaire `artinq` dans Omeka S (`/api/resource_classes`, `/api/properties`, `/api/resource_templates`) : aucun numéro n'est écrit en dur.
+Par défaut, la page se connecte à la **base commune** (`https://humanum-p8.fr/omk_artificialinquiries/api`) ; on peut aussi choisir l'Omeka local (`http://localhost/omekas/api`). Au démarrage, elle lit les identifiants du vocabulaire commun `artinq` et les modèles « Ex3a - … » (`/api/resource_classes`, `/api/properties`, `/api/resource_templates`) : aucun numéro n'est écrit en dur.
 
 ### Authentification
 
@@ -139,34 +149,32 @@ Au démarrage, la page lit les identifiants du vocabulaire `artinq` dans Omeka S
 | **GitHub** | ⏳ à venir | GitHub OAuth demande un « secret client » qui ne peut pas être dans une page publique : il faut un petit serveur intermédiaire. |
 | **CAS (université)** | ⏳ à venir | Se fait côté Omeka S, avec un module d'authentification CAS : on se connecte à Omeka avec son compte Paris 8, puis on crée sa clé API. |
 
-### Autoriser la page à appeler Omeka S (CORS)
+### Autoriser la page à appeler un Omeka local (CORS)
 
-La page publiée sur GitHub Pages appelle l'API d'une autre adresse (`http://localhost/omekas/api`). Il faut l'autoriser en ajoutant ces lignes **tout en haut** du fichier `.htaccess` du dossier `omekas` :
+Pour la base commune, c'est le serveur du cours qui autorise les pages GitHub. Pour un Omeka **local**, ajouter ces lignes dans `omekas/index.php`, juste après `use Laminas\View\Model\ViewModel;` :
 
-```apache
-Header always set Access-Control-Allow-Origin "*"
-Header always set Access-Control-Allow-Methods "GET, POST, PUT, PATCH, DELETE, OPTIONS"
-Header always set Access-Control-Allow-Headers "Content-Type"
-Header always set Access-Control-Allow-Private-Network "true"
-RewriteEngine On
-RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ $1 [R=200,L]
+```php
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, PATCH, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type');
+header('Access-Control-Allow-Private-Network: true');
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') { http_response_code(204); exit; }
 ```
 
-Puis redémarrer Apache dans XAMPP. Pour tester sans GitHub Pages, on peut aussi copier `response.html` dans `htdocs` et l'ouvrir avec `http://localhost/response.html` (même adresse que l'API, donc pas besoin de CORS).
+Dans Chrome, il faut aussi autoriser « Accès au réseau local » pour la page github.io (Paramètres du site).
 
 ## 7. Structure du dépôt
 
 ```
-ArtificialInquiries_3a/
+ArtificialInquiries_3.a/
 ├── README.md                  ← ce fichier
 ├── diagram_class.md           ← diagramme de classes (Mermaid)
 ├── impressions-a-chaud.html   ← l'outil
 ├── response.html              ← interface CRUD connectée à Omeka S
 ├── ex3a_consignes.png         ← consignes papier (p. 16)
 ├── ex3a_formulaire.png        ← formulaire papier (p. 17)
-├── artificial_inquiries.ttl   ← vocabulaire artinq
-├── resource-template/         ← modèles de ressource Omeka S (JSON)
+├── artificial_inquiries.ttl   ← premier vocabulaire (remplacé par le vocabulaire commun)
+├── resource-template/         ← modèles de ressource Ex3a (vocabulaire commun, JSON)
 └── omk.sql                    ← export de la base Omeka S
 ```
 
