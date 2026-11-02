@@ -2,9 +2,9 @@
   "o:label": "Ex3a - Conversation marquante",
   "o:resource_class": {
     "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
-    "vocabulary_label": "Artificial Inquiries",
+    "vocabulary_label": "Artificial Inquieries",
     "local_name": "ConversationMarquante",
-    "label": "ConversationMarquante"
+    "label": "Conversation marquante"
   },
   "o:title_property": {
     "vocabulary_namespace_uri": "http://purl.org/dc/terms/",
@@ -34,7 +34,7 @@
       "label": "Title"
     },
     {
-      "o:alternate_label": "Rang (1, 2 ou 3)",
+      "o:alternate_label": "Rang (1 à 3)",
       "o:alternate_comment": null,
       "o:is_required": false,
       "o:is_private": false,
@@ -48,31 +48,12 @@
         }
       ],
       "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
-      "vocabulary_label": "Artificial Inquiries",
-      "local_name": "rang",
-      "label": "a comme rang"
+      "vocabulary_label": "Artificial Inquieries",
+      "local_name": "ordre",
+      "label": "ordre"
     },
     {
-      "o:alternate_label": "Ce qui s'est passé et pourquoi",
-      "o:alternate_comment": null,
-      "o:is_required": false,
-      "o:is_private": false,
-      "o:data_type": [
-        "literal"
-      ],
-      "data_types": [
-        {
-          "name": "literal",
-          "label": "Text"
-        }
-      ],
-      "vocabulary_namespace_uri": "http://purl.org/dc/terms/",
-      "vocabulary_label": "Dublin Core",
-      "local_name": "description",
-      "label": "Description"
-    },
-    {
-      "o:alternate_label": "Ressenti",
+      "o:alternate_label": "Ce qui s'est passé et pourquoi elle a marqué",
       "o:alternate_comment": null,
       "o:is_required": false,
       "o:is_private": false,
@@ -86,9 +67,28 @@
         }
       ],
       "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
-      "vocabulary_label": "Artificial Inquiries",
-      "local_name": "ressenti",
-      "label": "a comme ressenti"
+      "vocabulary_label": "Artificial Inquieries",
+      "local_name": "pourquoiMarquante",
+      "label": "pourquoi marquante"
+    },
+    {
+      "o:alternate_label": "Ressentis",
+      "o:alternate_comment": null,
+      "o:is_required": false,
+      "o:is_private": false,
+      "o:data_type": [
+        "resource:item"
+      ],
+      "data_types": [
+        {
+          "name": "resource:item",
+          "label": "Item"
+        }
+      ],
+      "vocabulary_namespace_uri": "https://humanum-p8.fr/omk_artificialinquiries/onto/artinq#",
+      "vocabulary_label": "Artificial Inquieries",
+      "local_name": "aPourEmotion",
+      "label": "a pour émotion"
     }
   ]
 }
